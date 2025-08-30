@@ -1,14 +1,20 @@
 #include <Arduino.h>
 #include "pitches.h"
 
-//display
+// display
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-
-//IO Expander
+// IO Expander
 #include <Adafruit_MCP23X17.h>
 Adafruit_MCP23X17 mcp;
+
+// IMU
+#define BMI323_I2C_ADDRESS 0x68 // Default I²C address when CS is low
+
+// BMI323 register addresses
+#define BMI323_CHIP_ID_REG 0x02
+#define BMI323_ACCEL_X_LSB 0x12
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -17,11 +23,11 @@ Adafruit_MCP23X17 mcp;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-//IO Expander
+// IO Expander
 #define IO_ADDRESS 0x22
 #define INT_A 26
 
-//pins
+// pins
 #define AIN1 6
 #define AIN2 7
 #define PWMA 8
@@ -35,37 +41,41 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define SCL 5
 #define SDA 4
 
-
-
-//melody here
+// melody here
 
 int melody[] = {
-  NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4, 
-  NOTE_CS5, NOTE_B4, NOTE_D4, NOTE_E4, 
-  NOTE_B4, NOTE_A4, NOTE_CS4, NOTE_E4,
-  NOTE_A4
-};
+    NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
+    NOTE_CS5, NOTE_B4, NOTE_D4, NOTE_E4,
+    NOTE_B4, NOTE_A4, NOTE_CS4, NOTE_E4,
+    NOTE_A4};
 
 int durations[] = {
-  8, 8, 4, 4,
-  8, 8, 4, 4,
-  8, 8, 4, 4,
-  2
-};
+    8, 8, 4, 4,
+    8, 8, 4, 4,
+    8, 8, 4, 4,
+    2};
 
+
+#include <QTRSensors.h>
+
+const uint8_t QTRPins[] = {14, 13, 12, 11, 10};
+QTRSensors qtr;
+int QTRSensorCount = 5;
 
 
 void setup()
 {
   Serial.begin(115200);
 
-  delay(1000);
+  delay(5000);
 
   Serial.println("Serial library initialized.");
 
-  if (!mcp.begin_I2C(IO_ADDRESS)) {
+  if (!mcp.begin_I2C(IO_ADDRESS))
+  {
     Serial.println("Error.");
-    while (1);
+    while (1)
+      ;
   }
 
   Serial.println("IO Expander found!");
@@ -82,7 +92,7 @@ void setup()
 
   pinMode(INT_A, INPUT);
 
-  //IO Expander
+  // IO Expander
   mcp.setupInterrupts(true, false, LOW);
 
   // configure button pin for input with pull up
@@ -120,7 +130,6 @@ void setup()
     noTone(BUZZER);
   }
 
-
   // // display
   Wire.begin();
 
@@ -131,7 +140,7 @@ void setup()
       ;
   }
 
-  //draw something
+  // draw something
   display.clearDisplay();
   display.setTextSize(2.5);
   display.setTextColor(SSD1306_WHITE);
@@ -140,41 +149,77 @@ void setup()
 
   display.display();
 
+  Serial.println("SSD1306 initialized successfully.");
+
+  // IMU
+  Wire.beginTransmission(BMI323_I2C_ADDRESS);
+  Wire.write(BMI323_CHIP_ID_REG); // Request chip ID register
+  Wire.endTransmission();
+  Wire.requestFrom(BMI323_I2C_ADDRESS, 1);
+
+  if (Wire.available())
+  {
+    uint8_t chipID = Wire.read();
+    Serial.print("Chip ID: 0x");
+    Serial.println(chipID, HEX);
+    if (chipID == 0xb0)
+    { // Expected chip ID for BMI323
+      Serial.println("BMI323 detected!");
+    }
+    else
+    {
+      Serial.println("BMI323 not detected. Check connections.");
+    }
+  }
+
+
+  qtr.setTypeRC();
+  qtr.setSensorPins(QTRPins, QTRSensorCount);
+
+  for (int i = 0; i < 300; i++)
+  {
+    qtr.calibrate();
+  }
+
+
 }
 
 void loop()
 {
 
-  // //motor control code here
-
-  // //PWM
-  analogWrite(PWMA, 50);
-  analogWrite(PWMB, 50);
-
-  // //move forward
-  digitalWrite(AIN1, HIGH);
-  digitalWrite(AIN2, LOW);
-
-
-  digitalWrite(BIN1, HIGH);
-  digitalWrite(BIN2, LOW);
-
-  delay(1000);
-
-  //move backward
-  digitalWrite(AIN1, LOW);
-  digitalWrite(AIN2, HIGH);
-
-
-  digitalWrite(BIN1, LOW);
-  digitalWrite(BIN2, HIGH);
-
-  delay(1000);
-
-
-  if (!digitalRead(INT_A)) {
+  // IO Expander
+  if (!digitalRead(INT_A))
+  {
     Serial.print("Interrupt detected on pin: ");
     Serial.println(mcp.getLastInterruptPin());
-    mcp.clearInterrupts();  // clear
+    mcp.clearInterrupts(); // clear
   }
+
+  // Read accelerometer X-axis data
+  Wire.beginTransmission(BMI323_I2C_ADDRESS);
+  Wire.write(BMI323_ACCEL_X_LSB); // Request X-axis LSB register
+  Wire.endTransmission();
+  Wire.requestFrom(BMI323_I2C_ADDRESS, 2); // Read 2 bytes (LSB + MSB)
+
+  if (Wire.available() == 2)
+  {
+    int16_t accelX = Wire.read(); // Read LSB
+    accelX |= (Wire.read() << 8); // Read MSB and combine
+    Serial.print("Accel X: ");
+    Serial.println(accelX);
+  }
+
+
+  u16_t QTRSensorValues[5];
+  qtr.read(QTRSensorValues);
+
+  // for (int i = 0; i < QTRSensorCount; i++)
+  // {
+  //   Serial.print("QTR Sensor ");
+  //   Serial.print(i);
+  //   Serial.print(": ");
+  //   Serial.println(QTRSensorValues[i]);
+  // }
+
+  delay(10); // Delay for readability
 }
