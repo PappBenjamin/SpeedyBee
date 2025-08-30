@@ -2,9 +2,13 @@
 #include "pitches.h"
 
 //display
-
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+
+
+//IO Expander
+#include <Adafruit_MCP23X17.h>
+Adafruit_MCP23X17 mcp;
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -12,6 +16,10 @@
 #define SCREEN_ADDRESS 0x3C
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+//IO Expander
+#define IO_ADDRESS 0x22
+#define INT_A 26
 
 //pins
 #define AIN1 6
@@ -26,6 +34,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 #define SCL 5
 #define SDA 4
+
 
 
 //melody here
@@ -48,6 +57,19 @@ int durations[] = {
 
 void setup()
 {
+  Serial.begin(115200);
+
+  delay(1000);
+
+  Serial.println("Serial library initialized.");
+
+  if (!mcp.begin_I2C(IO_ADDRESS)) {
+    Serial.println("Error.");
+    while (1);
+  }
+
+  Serial.println("IO Expander found!");
+
   pinMode(AIN1, OUTPUT);
   pinMode(AIN2, OUTPUT);
   pinMode(PWMA, OUTPUT);
@@ -57,6 +79,27 @@ void setup()
   pinMode(PWMB, OUTPUT);
 
   pinMode(BUZZER, OUTPUT);
+
+  pinMode(INT_A, INPUT);
+
+  //IO Expander
+  mcp.setupInterrupts(true, false, LOW);
+
+  // configure button pin for input with pull up
+  mcp.pinMode(0, INPUT_PULLUP);
+  mcp.pinMode(1, INPUT_PULLUP);
+  mcp.pinMode(2, INPUT_PULLUP);
+  mcp.pinMode(3, INPUT_PULLUP);
+  mcp.pinMode(4, INPUT_PULLUP);
+  mcp.pinMode(5, INPUT_PULLUP);
+
+  // enable interrupt on button_pin
+  mcp.setupInterruptPin(0, LOW);
+  mcp.setupInterruptPin(1, LOW);
+  mcp.setupInterruptPin(2, LOW);
+  mcp.setupInterruptPin(3, LOW);
+  mcp.setupInterruptPin(4, LOW);
+  mcp.setupInterruptPin(5, LOW);
 
   // Buzzer for sound alerts
   int size = sizeof(durations) / sizeof(int);
@@ -78,7 +121,7 @@ void setup()
   }
 
 
-  // display
+  // // display
   Wire.begin();
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
@@ -102,13 +145,13 @@ void setup()
 void loop()
 {
 
-  //motor control code here
+  // //motor control code here
 
-  //PWM
+  // //PWM
   analogWrite(PWMA, 50);
   analogWrite(PWMB, 50);
 
-  //move forward
+  // //move forward
   digitalWrite(AIN1, HIGH);
   digitalWrite(AIN2, LOW);
 
@@ -127,4 +170,11 @@ void loop()
   digitalWrite(BIN2, HIGH);
 
   delay(1000);
+
+
+  if (!digitalRead(INT_A)) {
+    Serial.print("Interrupt detected on pin: ");
+    Serial.println(mcp.getLastInterruptPin());
+    mcp.clearInterrupts();  // clear
+  }
 }
