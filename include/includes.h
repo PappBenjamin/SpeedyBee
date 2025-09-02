@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 
-
 // Buzzer
 #include "buzzer.h"
 
@@ -16,6 +15,7 @@
 // expander
 #include "expander.h"
 
-
+// IMU
+#include "IMU.h"
 
 #endif

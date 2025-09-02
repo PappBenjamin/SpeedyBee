@@ -10,6 +10,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // QTR Sensors
 QTRSensors qtr;
 
+// IMU
+IMU imu;
+
 void settingPinsModes();
 
 void setup()
@@ -17,7 +20,7 @@ void setup()
   Serial.begin(115200);
   Wire.begin();
 
-  delay(200);
+  delay(2000);
 
   // Set pin modes
   settingPinsModes();
@@ -35,6 +38,9 @@ void setup()
 
   // QTR Sensors
   qtrCalibrate();
+
+  // IMU
+  imu.begin();
 }
 
 void loop()
@@ -51,9 +57,9 @@ void loop()
   readQTRSensors(QTRSensorValues);
   printQTRSensorValues(QTRSensorValues);
 
+  imu.read();
   delay(100); // Delay for readability
 }
-
 
 void settingPinsModes()
 {
