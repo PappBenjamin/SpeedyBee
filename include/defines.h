@@ -1,19 +1,5 @@
-#ifndef MAIN_DEFS_INCLUDES_H
-#define MAIN_DEFS_INCLUDES_H
-
-#include <Arduino.h>
-
-
-// Buzzer
-#include "pitches.h"
-
-// QTR Sensors
-#include <QTRSensors.h>
-
-
-// display
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#ifndef DEFINES_H
+#define DEFINES_H
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -23,7 +9,6 @@
 
 
 // IO Expander
-#include <Adafruit_MCP23X17.h>
 #define IO_ADDRESS 0x22
 #define INT_A 26
 
@@ -41,6 +26,4 @@
 #define SCL 5
 #define SDA 4
 
-
-
-#endif // MAIN_DEFS_INCLUDES_H
+#endif // DEFINES_H
