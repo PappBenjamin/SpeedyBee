@@ -30,22 +30,27 @@ void setup()
   // Set pin modes
   settingPinsModes();
 
-  // Buzzer
-  playStartSong();
-
-  // IO Expander
-  setupExpander();
-
   // // display
 
   displayInit();
   displayPrint("SpeedyBee!");
 
+  // Buzzer
+  playStartSong();
+
+  // IO Expander
+  setupExpander();
+  displayPrint("Expander init");
+
   // QTR Sensors
+  displayPrint("QTR calibration ...");
   qtrCalibrate();
 
   // IMU
+  displayPrint("IMU init");
   imu.begin();
+
+  displayPrint("Setup done!");
 }
 
 void loop()

@@ -24,6 +24,7 @@ void displayPrint(const char *text)
   display.setCursor(0, 29.5);
   display.println(text);
   display.display();
+  delay(200);
 }
 
 void display_IR(u16_t *irValues)
