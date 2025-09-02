@@ -1,3 +1,6 @@
+#ifndef MAIN_DEFS_INCLUDES_H
+#define MAIN_DEFS_INCLUDES_H
+
 #include <Arduino.h>
 
 
@@ -17,7 +20,6 @@
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 
 // IO Expander
@@ -39,16 +41,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define SCL 5
 #define SDA 4
 
-// melody here
 
-int melody[] = {
-    NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
-    NOTE_CS5, NOTE_B4, NOTE_D4, NOTE_E4,
-    NOTE_B4, NOTE_A4, NOTE_CS4, NOTE_E4,
-    NOTE_A4};
 
-int durations[] = {
-    8, 8, 4, 4,
-    8, 8, 4, 4,
-    8, 8, 4, 4,
-    2};
+#endif // MAIN_DEFS_INCLUDES_H

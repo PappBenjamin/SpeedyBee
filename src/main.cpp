@@ -1,8 +1,9 @@
 #include "main_defs_includes.h"
-
+#include "expander.h"
 
 // IO Expander
 Adafruit_MCP23X17 mcp;
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 
 // QTR Sensors
@@ -10,6 +11,20 @@ const uint8_t QTRPins[] = {14, 13, 12, 11, 10};
 QTRSensors qtr;
 int QTRSensorCount = 5;
 
+
+// melody here
+
+int melody[] = {
+    NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
+    NOTE_CS5, NOTE_B4, NOTE_D4, NOTE_E4,
+    NOTE_B4, NOTE_A4, NOTE_CS4, NOTE_E4,
+    NOTE_A4};
+
+int durations[] = {
+    8, 8, 4, 4,
+    8, 8, 4, 4,
+    8, 8, 4, 4,
+    2};
 
 void setup()
 {
@@ -19,14 +34,7 @@ void setup()
 
   Serial.println("Serial library initialized.");
 
-  if (!mcp.begin_I2C(IO_ADDRESS))
-  {
-    Serial.println("Error.");
-    while (1)
-      ;
-  }
-
-  Serial.println("IO Expander found!");
+ 
 
   pinMode(AIN1, OUTPUT);
   pinMode(AIN2, OUTPUT);
@@ -38,26 +46,10 @@ void setup()
 
   pinMode(BUZZER, OUTPUT);
 
-  pinMode(INT_A, INPUT);
+
 
   // IO Expander
-  mcp.setupInterrupts(true, false, LOW);
-
-  // configure button pin for input with pull up
-  mcp.pinMode(0, INPUT_PULLUP);
-  mcp.pinMode(1, INPUT_PULLUP);
-  mcp.pinMode(2, INPUT_PULLUP);
-  mcp.pinMode(3, INPUT_PULLUP);
-  mcp.pinMode(4, INPUT_PULLUP);
-  mcp.pinMode(5, INPUT_PULLUP);
-
-  // enable interrupt on button_pin
-  mcp.setupInterruptPin(0, LOW);
-  mcp.setupInterruptPin(1, LOW);
-  mcp.setupInterruptPin(2, LOW);
-  mcp.setupInterruptPin(3, LOW);
-  mcp.setupInterruptPin(4, LOW);
-  mcp.setupInterruptPin(5, LOW);
+  setupExpander(mcp);
 
   // Buzzer for sound alerts
   int size = sizeof(durations) / sizeof(int);
@@ -116,16 +108,10 @@ void setup()
 
 void loop()
 {
-
-  // IO Expander
-  if (!digitalRead(INT_A))
-  {
-    Serial.print("Interrupt detected on pin: ");
-    Serial.println(mcp.getLastInterruptPin());
-    mcp.clearInterrupts(); // clear
+  int KeypadNum = checkExpanderInterrupt(mcp);
+  if(KeypadNum != -1){
+    // TODO: handle interrupt
   }
-
-
 
   u16_t QTRSensorValues[5];
   qtr.read(QTRSensorValues);
@@ -138,5 +124,5 @@ void loop()
     Serial.println(QTRSensorValues[i]);
   }
 
-  delay(10); // Delay for readability
+  delay(100); // Delay for readability
 }
