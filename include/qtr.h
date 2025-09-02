@@ -7,9 +7,11 @@
 
 extern const uint8_t QTRPins[];
 extern int QTRSensorCount;
+extern QTRSensors qtr;
 
-void qtrCalibrate(QTRSensors &qtr);
-void readQTRSensors(QTRSensors &qtr, u16_t *values);
+
+void qtrCalibrate();
+void readQTRSensors( u16_t *values);
 void printQTRSensorValues(u16_t *values);
 
 #endif // QTR_H

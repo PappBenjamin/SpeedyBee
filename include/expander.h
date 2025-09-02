@@ -5,7 +5,9 @@
 #include <Arduino.h>
 #include <Adafruit_MCP23X17.h>
 
-bool setupExpander(Adafruit_MCP23X17 &mcp);
-int checkExpanderInterrupt(Adafruit_MCP23X17 &mcp);
+extern Adafruit_MCP23X17 mcp;
+
+bool setupExpander();
+int checkExpanderInterrupt();
 
 #endif // EXPANDER_H

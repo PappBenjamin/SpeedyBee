@@ -7,10 +7,8 @@ Adafruit_MCP23X17 mcp;
 // Display
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-
 // QTR Sensors
 QTRSensors qtr;
-
 
 void setup()
 {
@@ -29,49 +27,33 @@ void setup()
 
   pinMode(BUZZER, OUTPUT);
 
-  //Buzzer
+  // Buzzer
   playStartSong();
 
-
   // IO Expander
-  setupExpander(mcp);
+  setupExpander();
 
   // // display
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
-  {
-    Serial1.println("SSD1306 initialization failed!");
-    while (true)
-      ;
-  }
-
-  // draw something
-  display.clearDisplay();
-  display.setTextSize(2.5);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 29.5);
-  display.println("SpeedyBee!");
-
-  display.display();
-
-
+  displayInit();
+  displayPrint("SpeedyBee!");
 
   // QTR Sensors
-  qtrCalibrate(qtr);
-
+  qtrCalibrate();
 }
-
 
 void loop()
 {
-  int KeypadNum = checkExpanderInterrupt(mcp);
-  if(KeypadNum != -1){
+  int KeypadNum = checkExpanderInterrupt();
+  if (KeypadNum != -1)
+  {
     // TODO: handle interrupt
+    Serial.print("Interrupt on pin: ");
+    Serial.println(KeypadNum);
   }
 
-
   u16_t QTRSensorValues[5];
-  readQTRSensors(qtr, QTRSensorValues);
+  readQTRSensors(QTRSensorValues);
   printQTRSensorValues(QTRSensorValues);
 
   delay(100); // Delay for readability

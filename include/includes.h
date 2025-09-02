@@ -11,8 +11,7 @@
 #include "qtr.h"
 
 // display
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include "display.h"
 
 // expander
 #include "expander.h"

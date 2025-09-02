@@ -5,7 +5,7 @@
  @return keypad of the returned interrupt
  @return -1 if no interrupt
  */
-int checkExpanderInterrupt(Adafruit_MCP23X17 &mcp){
+int checkExpanderInterrupt(){
   if (!digitalRead(INT_A))
   {
     int x = mcp.getLastInterruptPin();
@@ -17,7 +17,7 @@ int checkExpanderInterrupt(Adafruit_MCP23X17 &mcp){
 
 
 
-bool setupExpander(Adafruit_MCP23X17 &mcp){
+bool setupExpander(){
      if (!mcp.begin_I2C(IO_ADDRESS))
   {
     Serial.println("Error.");

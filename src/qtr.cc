@@ -6,7 +6,7 @@ int QTRSensorCount = 5;
 
 
 
-void qtrCalibrate(QTRSensors &qtr){
+void qtrCalibrate(){
     qtr.setTypeRC();
   qtr.setSensorPins(QTRPins, QTRSensorCount);
 
@@ -17,7 +17,7 @@ void qtrCalibrate(QTRSensors &qtr){
 }
 
 
-void readQTRSensors(QTRSensors &qtr, u16_t *values)
+void readQTRSensors( u16_t *values)
 {
   qtr.read(values);
 }
