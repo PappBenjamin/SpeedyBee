@@ -23,7 +23,6 @@
 
 #define BUZZER 3
 
-#define SCL 5
-#define SDA 4
+
 
 #endif // DEFINES_H

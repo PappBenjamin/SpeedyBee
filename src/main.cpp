@@ -3,13 +3,13 @@
 
 // IO Expander
 Adafruit_MCP23X17 mcp;
+
+// Display
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 
 // QTR Sensors
-const uint8_t QTRPins[] = {14, 13, 12, 11, 10};
 QTRSensors qtr;
-int QTRSensorCount = 5;
 
 
 void setup()
@@ -56,19 +56,11 @@ void setup()
 
 
 
-
-
-
-  qtr.setTypeRC();
-  qtr.setSensorPins(QTRPins, QTRSensorCount);
-
-  for (int i = 0; i < 300; i++)
-  {
-    qtr.calibrate();
-  }
-
+  // QTR Sensors
+  qtrCalibrate(qtr);
 
 }
+
 
 void loop()
 {
@@ -77,16 +69,10 @@ void loop()
     // TODO: handle interrupt
   }
 
-  u16_t QTRSensorValues[5];
-  qtr.read(QTRSensorValues);
 
-  for (int i = 0; i < QTRSensorCount; i++)
-  {
-    Serial.print("QTR Sensor ");
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.println(QTRSensorValues[i]);
-  }
+  u16_t QTRSensorValues[5];
+  readQTRSensors(qtr, QTRSensorValues);
+  printQTRSensorValues(QTRSensorValues);
 
   delay(100); // Delay for readability
 }

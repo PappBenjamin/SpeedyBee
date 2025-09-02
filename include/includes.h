@@ -8,8 +8,7 @@
 #include "buzzer.h"
 
 // QTR Sensors
-#include <QTRSensors.h>
-
+#include "qtr.h"
 
 // display
 #include <Adafruit_GFX.h>
