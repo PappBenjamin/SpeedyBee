@@ -1,63 +1,11 @@
-#include <Arduino.h>
-#include "pitches.h"
+#include "main_defs_includes.h"
 
-// display
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 
 // IO Expander
-#include <Adafruit_MCP23X17.h>
 Adafruit_MCP23X17 mcp;
 
-// IMU
-#define BMI323_I2C_ADDRESS 0x68 // Default I²C address when CS is low
 
-// BMI323 register addresses
-#define BMI323_CHIP_ID_REG 0x02
-#define BMI323_ACCEL_X_LSB 0x12
-
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_RESET -1
-#define SCREEN_ADDRESS 0x3C
-
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-// IO Expander
-#define IO_ADDRESS 0x22
-#define INT_A 26
-
-// pins
-#define AIN1 6
-#define AIN2 7
-#define PWMA 8
-
-#define BIN1 20
-#define BIN2 21
-#define PWMB 22
-
-#define BUZZER 3
-
-#define SCL 5
-#define SDA 4
-
-// melody here
-
-int melody[] = {
-    NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
-    NOTE_CS5, NOTE_B4, NOTE_D4, NOTE_E4,
-    NOTE_B4, NOTE_A4, NOTE_CS4, NOTE_E4,
-    NOTE_A4};
-
-int durations[] = {
-    8, 8, 4, 4,
-    8, 8, 4, 4,
-    8, 8, 4, 4,
-    2};
-
-
-#include <QTRSensors.h>
-
+// QTR Sensors
 const uint8_t QTRPins[] = {14, 13, 12, 11, 10};
 QTRSensors qtr;
 int QTRSensorCount = 5;
@@ -67,7 +15,7 @@ void setup()
 {
   Serial.begin(115200);
 
-  delay(5000);
+  delay(200);
 
   Serial.println("Serial library initialized.");
 
@@ -151,26 +99,8 @@ void setup()
 
   Serial.println("SSD1306 initialized successfully.");
 
-  // IMU
-  Wire.beginTransmission(BMI323_I2C_ADDRESS);
-  Wire.write(BMI323_CHIP_ID_REG); // Request chip ID register
-  Wire.endTransmission();
-  Wire.requestFrom(BMI323_I2C_ADDRESS, 1);
 
-  if (Wire.available())
-  {
-    uint8_t chipID = Wire.read();
-    Serial.print("Chip ID: 0x");
-    Serial.println(chipID, HEX);
-    if (chipID == 0xb0)
-    { // Expected chip ID for BMI323
-      Serial.println("BMI323 detected!");
-    }
-    else
-    {
-      Serial.println("BMI323 not detected. Check connections.");
-    }
-  }
+
 
 
   qtr.setTypeRC();
@@ -195,31 +125,18 @@ void loop()
     mcp.clearInterrupts(); // clear
   }
 
-  // Read accelerometer X-axis data
-  Wire.beginTransmission(BMI323_I2C_ADDRESS);
-  Wire.write(BMI323_ACCEL_X_LSB); // Request X-axis LSB register
-  Wire.endTransmission();
-  Wire.requestFrom(BMI323_I2C_ADDRESS, 2); // Read 2 bytes (LSB + MSB)
-
-  if (Wire.available() == 2)
-  {
-    int16_t accelX = Wire.read(); // Read LSB
-    accelX |= (Wire.read() << 8); // Read MSB and combine
-    Serial.print("Accel X: ");
-    Serial.println(accelX);
-  }
 
 
   u16_t QTRSensorValues[5];
   qtr.read(QTRSensorValues);
 
-  // for (int i = 0; i < QTRSensorCount; i++)
-  // {
-  //   Serial.print("QTR Sensor ");
-  //   Serial.print(i);
-  //   Serial.print(": ");
-  //   Serial.println(QTRSensorValues[i]);
-  // }
+  for (int i = 0; i < QTRSensorCount; i++)
+  {
+    Serial.print("QTR Sensor ");
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.println(QTRSensorValues[i]);
+  }
 
   delay(10); // Delay for readability
 }
