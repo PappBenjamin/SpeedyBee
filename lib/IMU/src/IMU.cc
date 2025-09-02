@@ -88,10 +88,12 @@ void IMU::begin()
      * Total:       0x708B
      */
     writeRegister16(GYR_CONF, 0x708B); // Setting gyroscope
+    delay(50);
 }
 
 void IMU::read()
 {
+    readRegister16(0x02);
     if (readRegister16(0x02) == 0x00)
     {
         // Read ChipID
