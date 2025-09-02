@@ -10,6 +10,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // QTR Sensors
 QTRSensors qtr;
 
+void settingPinsModes();
+
 void setup()
 {
   Serial.begin(115200);
@@ -17,15 +19,8 @@ void setup()
 
   delay(200);
 
-  pinMode(AIN1, OUTPUT);
-  pinMode(AIN2, OUTPUT);
-  pinMode(PWMA, OUTPUT);
-
-  pinMode(BIN1, OUTPUT);
-  pinMode(BIN2, OUTPUT);
-  pinMode(PWMB, OUTPUT);
-
-  pinMode(BUZZER, OUTPUT);
+  // Set pin modes
+  settingPinsModes();
 
   // Buzzer
   playStartSong();
@@ -57,4 +52,18 @@ void loop()
   printQTRSensorValues(QTRSensorValues);
 
   delay(100); // Delay for readability
+}
+
+
+void settingPinsModes()
+{
+  pinMode(AIN1, OUTPUT);
+  pinMode(AIN2, OUTPUT);
+  pinMode(PWMA, OUTPUT);
+
+  pinMode(BIN1, OUTPUT);
+  pinMode(BIN2, OUTPUT);
+  pinMode(PWMB, OUTPUT);
+
+  pinMode(BUZZER, OUTPUT);
 }
