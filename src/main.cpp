@@ -61,9 +61,10 @@ void loop()
   u16_t QTRSensorValues[5];
   readQTRSensors(QTRSensorValues);
   printQTRSensorValues(QTRSensorValues);
+  display_IR(QTRSensorValues);
 
-  imu.read();
-  delay(1000); // Delay for readability
+  // imu.read();
+  delay(10); // Delay for readability
 }
 
 void settingPinsModes()

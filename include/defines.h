@@ -6,7 +6,7 @@
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
-
+#define QTRSensorCount 5
 
 // IO Expander
 #define IO_ADDRESS 0x22
@@ -22,7 +22,5 @@
 #define PWMB 22
 
 #define BUZZER 3
-
-
 
 #endif // DEFINES_H

@@ -1,7 +1,6 @@
 #include "qtr.h"
 
 const uint8_t QTRPins[] = {14, 13, 12, 11, 10};
-int QTRSensorCount = 5;
 
 void qtrCalibrate()
 {
@@ -17,7 +16,7 @@ void qtrCalibrate()
 
 void readQTRSensors(u16_t *values)
 {
-  qtr.read(values);
+  qtr.readLineBlack(values);
 }
 
 void printQTRSensorValues(u16_t *values)
