@@ -1,6 +1,9 @@
 #include "includes.h"
 #include "defines.h"
 
+#define ARDUINOTRACE_ENABLE 1
+#include <ArduinoTrace.h>
+
 // IO Expander
 Adafruit_MCP23X17 mcp;
 
@@ -19,6 +22,8 @@ void setup()
 {
   Serial.begin(115200);
   Wire.begin();
+
+  TRACE();
 
   delay(2000);
 
