@@ -18,4 +18,6 @@
 // IMU
 #include "IMU.h"
 
+#include "menu.h"
+
 #endif

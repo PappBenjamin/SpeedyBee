@@ -23,4 +23,15 @@
 
 #define BUZZER 3
 
+enum Keypad
+{
+    BTN0 = 0,
+    BTN1 = 1,
+    Key1 = 4,
+    Key2 = 5,
+    Key3 = 2,
+    Key4 = 3,
+
+};
+
 #endif // DEFINES_H

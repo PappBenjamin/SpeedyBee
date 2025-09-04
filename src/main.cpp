@@ -16,6 +16,11 @@ QTRSensors qtr;
 // IMU
 IMU imu;
 
+// Menu
+Menu menu;
+// Menu state and handler
+MenuState currentMenuState = MAIN_MENU;
+
 void settingPinsModes();
 
 void setup()
@@ -44,13 +49,14 @@ void setup()
 
   // QTR Sensors
   displayPrint("QTR calibration ...");
-  qtrCalibrate();
+  // qtrCalibrate();
 
   // IMU
   displayPrint("IMU init");
   imu.begin();
 
   displayPrint("Setup done!");
+  delay(1000);
 }
 
 void loop()
@@ -58,17 +64,15 @@ void loop()
   int KeypadNum = checkExpanderInterrupt();
   if (KeypadNum != -1)
   {
-    // TODO: handle interrupt
-    Serial.print("Interrupt on pin: ");
-    Serial.println(KeypadNum);
+    // TODO: handle menu
   }
 
-  u16_t QTRSensorValues[5];
-  readQTRSensors(QTRSensorValues);
-  printQTRSensorValues(QTRSensorValues);
-  display_IR(QTRSensorValues);
+  // u16_t QTRSensorValues[5];
+  // readQTRSensors(QTRSensorValues);
+  // printQTRSensorValues(QTRSensorValues);
+  // display_IR(QTRSensorValues);
 
-  // imu.read();
+  imu.read();
   delay(10); // Delay for readability
 }
 
