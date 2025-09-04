@@ -93,30 +93,42 @@ void IMU::begin()
 
 void IMU::read()
 {
-    readRegister16(0x02);
-    if (readRegister16(0x02) == 0x00)
-    {
-        // Read ChipID
-        Serial.print("ChipID:");
-        Serial.print(readRegister16(0x00));
-        readAllAccel(); // read all accelerometer/gyroscope/temperature data
-        Serial.print(" \tx:");
-        Serial.print(x);
-        Serial.print(" \ty:");
-        Serial.print(y);
-        Serial.print(" \tz:");
-        Serial.print(z);
-        Serial.print(" \tgyr_x:");
-        Serial.print(gyr_x);
-        Serial.print(" \tgyr_y:");
-        Serial.print(gyr_y);
-        Serial.print(" \tgyr_z:");
-        Serial.print(gyr_z);
-        Serial.print(" \ttemp:");
-        Serial.println(temperatureInDegree);
-    }
-    else
-    {
-        Serial.println("No Data");
-    }
+    // readRegister16(0x02);
+    // if (readRegister16(0x02) == 0x00)
+    // {
+    // Read ChipID
+    // Serial.print("ChipID:");
+    // Serial.print(readRegister16(0x00));
+    readAllAccel(); // read all accelerometer/gyroscope/temperature data
+
+    // }
+    // else
+    // {
+    //     Serial.println("No Data");
+    // }
+}
+
+void IMU::printData()
+{
+    // Serial.print(" \tx:");
+    Serial.print(x);
+    // Serial.print(" \ty:");
+    Serial.print(",");
+
+    Serial.print(y);
+    // Serial.print(" \tz:");
+    Serial.print(",");
+    Serial.print(z);
+    // Serial.print(" \tgyr_x:");
+    Serial.print(",");
+    Serial.print(gyr_x);
+    // Serial.print(" \tgyr_y:");
+    Serial.print(",");
+    Serial.print(gyr_y);
+    // Serial.print(" \tgyr_z:");
+    Serial.print(",");
+    Serial.println(gyr_z);
+    // Serial.print(" \ttemp:");
+    // Serial.print("\t");
+    // Serial.println(temperatureInDegree);
 }

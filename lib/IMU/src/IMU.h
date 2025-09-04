@@ -26,6 +26,7 @@ public:
     void begin();
     void read();
     void softReset();
+    void printData();
 };
 
 #endif // _IMU_H_

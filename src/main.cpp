@@ -73,7 +73,8 @@ void loop()
   // display_IR(QTRSensorValues);
 
   imu.read();
-  delay(10); // Delay for readability
+  imu.printData();
+  delay(1000); // Delay for readability
 }
 
 void settingPinsModes()
