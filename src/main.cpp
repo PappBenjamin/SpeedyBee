@@ -21,16 +21,13 @@ Menu menu;
 // Menu state and handler
 MenuState currentMenuState = MAIN_MENU;
 
-// PID Constants     speed correction
-double Kp = 90;   //0.03   // Increase Proportional control slightly for better response
-double Kd = 0.35;  //0.009    // Increase Derivative for stability in curves
+// PID Constants        speed correction
+double Kp = 0.03;   /*       0.03          Increase Proportional control slightly for better response */
+double Kd = 0.009;  /*       0.009         Increase Derivative for stability in curves */
 
-int currentError = 0;
+int currentError = 0; // Current position error
 double filteredError = 0;  // Use for low-pass filtering error
 int lastError = 0;
-
-int currentspeedL = 10;
-int currentspeedR = 10;
 
 void forward(int speedA, int speedB);
 
@@ -55,7 +52,7 @@ void setup()
   delay(100);
   analogWrite(BUZZER, 0);
 
-  // // display
+  // display
 
   displayInit();
   displayPrint("SpeedyBee!");
@@ -91,6 +88,11 @@ void loop()
   // if (KeypadNum != -1)
   // {
   //   // TODO: handle menu
+  //   Serial.print("Keypad: ");
+  //   Serial.println(KeypadNum);
+  //   displayPrint("Keypad: ");
+  //   displayPrint(String(KeypadNum).c_str());
+  //   delay(200);
   // }
 
   u16_t QTRSensorValues[5];
@@ -99,52 +101,47 @@ void loop()
   display_IR(QTRSensorValues);
 
   int position = qtr.readLineBlack(QTRSensorValues);
-   // Calculate error: assume center of line is 2500
-  currentError = position - 2000;
+  currentError = position - 2000; // Calculate error: assume center of line is 2000
 
   Serial.print("Error: ");
   Serial.println(currentError);
 
-  // Low-pass filter on error to smooth rapid changes
-  double alpha = 0.82;  // Smoothing factor
+  // Low-pass filter on error
+  double alpha = 0.5;  // if alpha is closer to 1, less responsive but smoother
   filteredError = alpha * filteredError + (1 - alpha) * currentError;
 
-  // Proportional and Derivative calculations
-  double cError = pow(filteredError / 600, 3) / (1 + 1 * abs(pow(filteredError / 600, 3))); 
+  Serial.print("Filtered Error: ");
+  Serial.println(filteredError);
 
-  int speedCorrection = (Kp * cError) + (Kd * (filteredError - lastError));
-  // int speedCorrection = (Kp * currentError) + (Kd * (lastError));
+  // Cubic function for speed correction
+  double tanhError = tanh(filteredError / 1000.0);
 
-  Serial.print("Speed Correction: ");
-  Serial.println(speedCorrection);
+  Serial.print(" T Error: ");
+  Serial.println(tanhError);
 
-  // Dynamic speed adjustment to reduce drift
-  double beta = 0.15 - sqrt(abs((filteredError / 300) / (1 + abs(filteredError / 300))));
+// --- PD control calculation ---
+double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
 
-  int baseSpeed = 60;  // Base speed, slightly higher to maintain line-following momentum
-  int speedAdjust = 20; // Additional speed for turns
+// --- Base speeds ---
+int baseSpeed = 60;        // Normal forward speed
+int maxTurnSpeed = 40;     // Max extra speed added/subtracted for turning
 
+// --- Apply correction symmetrically ---
+int leftSpeed  = baseSpeed - (int)(speedCorrection * maxTurnSpeed);
+int rightSpeed = baseSpeed + (int)(speedCorrection * maxTurnSpeed);
 
-  currentspeedL = baseSpeed + speedAdjust * beta - speedCorrection;
+// --- Limit motor speed ---
+leftSpeed  = constrain(leftSpeed, -200, 200);
+rightSpeed = constrain(rightSpeed, -200, 200);
 
-  Serial.print("Left Speed: ");
-  Serial.println(currentspeedL);
-
-  currentspeedR = baseSpeed + speedAdjust * beta + speedCorrection;
-
-  Serial.print("Right Speed: ");
-  Serial.println(currentspeedR);
-
-  // currentspeedL = baseSpeed - speedCorrection;
-  // currentspeedR = baseSpeed + speedCorrection;
-
-  // Speed cap
-  currentspeedL = constrain(currentspeedL, - 200, 200); 
-  currentspeedR = constrain(currentspeedR, - 200, 200);
+// --- Debug ---
+Serial.print("Speed Correction: "); Serial.println(speedCorrection);
+Serial.print("Left Speed: "); Serial.println(leftSpeed);
+Serial.print("Right Speed: "); Serial.println(rightSpeed);
 
 
   // Drive motors
-  forward(currentspeedL, currentspeedR);
+  forward(rightSpeed, leftSpeed);
   lastError = filteredError;
 
   // imu.read();
