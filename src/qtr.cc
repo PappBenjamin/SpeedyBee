@@ -1,6 +1,6 @@
 #include "qtr.h"
 
-const uint8_t QTRPins[] = {14, 13, 12, 11, 10};
+const uint8_t QTRPins[] = {10, 14, 13, 12, 11};
 
 void qtrCalibrate()
 {

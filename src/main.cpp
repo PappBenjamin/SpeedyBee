@@ -49,7 +49,7 @@ void setup()
 
   // QTR Sensors
   displayPrint("QTR calibration ...");
-  // qtrCalibrate();
+  qtrCalibrate();
 
   // IMU
   displayPrint("IMU init");
@@ -67,14 +67,14 @@ void loop()
     // TODO: handle menu
   }
 
-  // u16_t QTRSensorValues[5];
-  // readQTRSensors(QTRSensorValues);
-  // printQTRSensorValues(QTRSensorValues);
-  // display_IR(QTRSensorValues);
+  u16_t QTRSensorValues[5];
+  readQTRSensors(QTRSensorValues);
+  printQTRSensorValues(QTRSensorValues);
+  display_IR(QTRSensorValues);
 
-  imu.read();
-  imu.printData();
-  delay(1000); // Delay for readability
+  // imu.read();
+  // imu.printData();
+  delay(10); // Delay for readability
 }
 
 void settingPinsModes()
