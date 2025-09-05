@@ -8,7 +8,7 @@ void qtrCalibrate()
   qtr.setTypeRC();
   qtr.setSensorPins(QTRPins, QTRSensorCount);
 
-  for (int i = 0; i < 300; i++)
+  for (int i = 0; i < 150; i++)
   {
     qtr.calibrate();
   }
