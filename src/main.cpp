@@ -23,7 +23,7 @@ MenuState currentMenuState = MAIN_MENU;
 
 // PID Constants        speed correction
 double Kp = 1.525;   /*       1.525          Increase Proportional control slightly for better response */
-double Kd = 0.0015;  /*       0.0015         Increase Derivative for stability in curves */
+double Kd = 0.0017;  /*       0.0015         Increase Derivative for stability in curves */
 
 int currentError = 0; // Current position error
 double filteredError = 0;  // Use for low-pass filtering error
@@ -107,7 +107,7 @@ void loop()
   Serial.println(currentError);
 
   // Low-pass filter on error
-  double alpha = 0.4;  // if alpha is closer to 1, less responsive but smoother
+  double alpha = 0.25;  // if alpha is closer to 1, less responsive but smoother
   filteredError = alpha * filteredError + (1 - alpha) * currentError;
 
   Serial.print("Filtered Error: ");
@@ -147,7 +147,7 @@ Serial.print("Right Speed: "); Serial.println(rightSpeed);
   // imu.read();
   // imu.printData();
 
-  delay(5); // Delay for readability
+  delay(10); // Delay for readability
 }
 
 void settingPinsModes()
