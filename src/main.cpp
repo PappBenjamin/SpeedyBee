@@ -23,15 +23,13 @@ MenuState currentMenuState = MAIN_MENU;
 
 // PID Constants        speed correction
 double Kp = 1.525;   /*       1.525          Increase Proportional control slightly for better response */
-double Kd = 0.002;  /*       0.001         Increase Derivative for stability in curves */
+double Kd = 0.001;  /*       0.0015      Increase Derivative for stability in curves */
 
 int currentError = 0; // Current position error
 double filteredError = 0;  // Use for low-pass filtering error
 int lastError = 0;
 
 void forward(int speedA, int speedB);
-
-
 
 
 void settingPinsModes();
@@ -107,7 +105,7 @@ void loop()
   Serial.println(currentError);
 
   // Low-pass filter on error
-  double alpha = 0.3;  // if alpha is closer to 1, less responsive but smoother
+  double alpha = 0.5;  // if alpha is closer to 1, less responsive but smoother // 0.4
   filteredError = alpha * filteredError + (1 - alpha) * currentError;
 
   Serial.print("Filtered Error: ");
@@ -123,8 +121,8 @@ void loop()
 double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
 
 // --- Base speeds ---
-int baseSpeed = 60;        // Normal forward speed
-int maxTurnSpeed = 50;     // Max extra speed added/subtracted for turning
+int baseSpeed = 100;        // Normal forward speed
+int maxTurnSpeed = 70;     // Max extra speed added/subtracted for turning
 
 // --- Apply correction symmetrically ---
 int leftSpeed  = baseSpeed - (int)(speedCorrection * maxTurnSpeed);
