@@ -16,14 +16,14 @@ QTRSensors qtr;
 // IMU
 IMU imu;
 
-// Menu
+// Menu2
 Menu menu;
 // Menu state and handler
 MenuState currentMenuState = MAIN_MENU;
 
 // PID Constants        speed correction
-double Kp = 0.03;   /*       0.03          Increase Proportional control slightly for better response */
-double Kd = 0.009;  /*       0.009         Increase Derivative for stability in curves */
+double Kp = 1.5;   /*       0.03          Increase Proportional control slightly for better response */
+double Kd = 0;  /*       0.009         Increase Derivative for stability in curves */
 
 int currentError = 0; // Current position error
 double filteredError = 0;  // Use for low-pass filtering error
@@ -100,14 +100,14 @@ void loop()
   printQTRSensorValues(QTRSensorValues);
   display_IR(QTRSensorValues);
 
-  int position = qtr.readLineBlack(QTRSensorValues);
+  int position = qtr.readLineWhite(QTRSensorValues);
   currentError = position - 2000; // Calculate error: assume center of line is 2000
 
   Serial.print("Error: ");
   Serial.println(currentError);
 
   // Low-pass filter on error
-  double alpha = 0.5;  // if alpha is closer to 1, less responsive but smoother
+  double alpha = 0.3;  // if alpha is closer to 1, less responsive but smoother
   filteredError = alpha * filteredError + (1 - alpha) * currentError;
 
   Serial.print("Filtered Error: ");
@@ -123,8 +123,8 @@ void loop()
 double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
 
 // --- Base speeds ---
-int baseSpeed = 60;        // Normal forward speed
-int maxTurnSpeed = 40;     // Max extra speed added/subtracted for turning
+int baseSpeed = 50;        // Normal forward speed
+int maxTurnSpeed = 30;     // Max extra speed added/subtracted for turning
 
 // --- Apply correction symmetrically ---
 int leftSpeed  = baseSpeed - (int)(speedCorrection * maxTurnSpeed);
@@ -141,7 +141,7 @@ Serial.print("Right Speed: "); Serial.println(rightSpeed);
 
 
   // Drive motors
-  forward(rightSpeed, leftSpeed);
+  forward(leftSpeed, rightSpeed);
   lastError = filteredError;
 
   // imu.read();
