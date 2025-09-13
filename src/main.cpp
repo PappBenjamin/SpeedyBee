@@ -21,9 +21,11 @@ Menu menu;
 // Menu state and handler
 MenuState currentMenuState = MAIN_MENU;
 
+//first speed
+
 // PID Constants        speed correction
 double Kp = 1.525;   /*       1.525          Increase Proportional control slightly for better response */
-double Kd = 0.0017;  /*       0.0015         Increase Derivative for stability in curves */
+double Kd = 0.001;  /*       0.0015 -> 0.0019        Increase Derivative for stability in curves */
 
 int currentError = 0; // Current position error
 double filteredError = 0;  // Use for low-pass filtering error
@@ -123,8 +125,8 @@ void loop()
 double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
 
 // --- Base speeds ---
-int baseSpeed = 100;        // Normal forward speed
-int maxTurnSpeed = 110;     // Max extra speed added/subtracted for turning
+int baseSpeed = 80;        // Normal forward speed
+int maxTurnSpeed = 90;     // Max extra speed added/subtracted for turning
 
 // --- Apply correction symmetrically ---
 int leftSpeed  = baseSpeed - (int)(speedCorrection * maxTurnSpeed);
