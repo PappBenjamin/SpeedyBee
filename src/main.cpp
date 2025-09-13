@@ -23,7 +23,7 @@ MenuState currentMenuState = MAIN_MENU;
 
 // PID Constants        speed correction
 double Kp = 1.525;   /*       1.525          Increase Proportional control slightly for better response */
-double Kd = 0.001;  /*       0.001         Increase Derivative for stability in curves */
+double Kd = 0.002;  /*       0.001         Increase Derivative for stability in curves */
 
 int currentError = 0; // Current position error
 double filteredError = 0;  // Use for low-pass filtering error
