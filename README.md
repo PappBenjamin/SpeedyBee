@@ -24,6 +24,10 @@ This information is used for **PD controller tuning**, helping to achieve better
 
 ![SpeedyBee Robot](https://github.com/user-attachments/assets/4fdc509f-0c2a-4c5f-b23e-999838ac6c9e)
 
+![SpeedyBee Robot](https://github.com/user-attachments/assets/b952d440-9c0a-4384-a189-2cc3d27b25e8)
+
+
+
 
 *Figure 1. SpeedyBee Line Follower Robot PCB prototypes.*
 
