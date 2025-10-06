@@ -76,3 +76,4 @@ The focus was on building a **functional, affordable, and tunable robot** using 
 
 - [Benjámin Papp](https://github.com/PappBenjamin)  
 - [Csongor Kántor](https://github.com/progenor)
+- [Hanga Barabás](https://github.com/bgabigel)
