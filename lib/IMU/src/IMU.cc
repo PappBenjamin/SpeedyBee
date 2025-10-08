@@ -1,11 +1,18 @@
-
 #include "IMU.h"
 
+/**
+ * @brief Constructs an IMU object and initializes sensor values to zero.
+ */
 IMU::IMU()
     : x(0), y(0), z(0), gyr_x(0), gyr_y(0), gyr_z(0), temperature(0), temperatureInDegree(0.f)
 {
 }
 
+/**
+ * @brief Writes a 16-bit value to a register on the IMU.
+ * @param reg The register address.
+ * @param value The 16-bit value to write.
+ */
 void IMU::writeRegister16(uint16_t reg, uint16_t value)
 {
     Wire.beginTransmission(INC_ADDRESS);
@@ -17,6 +24,11 @@ void IMU::writeRegister16(uint16_t reg, uint16_t value)
     Wire.endTransmission();
 }
 
+/**
+ * @brief Reads a 16-bit value from a register on the IMU.
+ * @param reg The register address.
+ * @return The 16-bit value read from the register.
+ */
 uint16_t IMU::readRegister16(uint8_t reg)
 {
     Wire.beginTransmission(INC_ADDRESS);
@@ -33,6 +45,10 @@ uint16_t IMU::readRegister16(uint8_t reg)
     return (data[3] | data[2] << 8);
 }
 
+/**
+ * @brief Reads all accelerometer, gyroscope, and temperature data from the IMU.
+ *        Updates the corresponding member variables.
+ */
 void IMU::readAllAccel()
 {
     Wire.beginTransmission(INC_ADDRESS);
@@ -59,12 +75,18 @@ void IMU::readAllAccel()
     temperatureInDegree = (temperature / 512.f) + 23.0f;
 }
 
+/**
+ * @brief Performs a software reset of the IMU.
+ */
 void IMU::softReset()
 {
     writeRegister16(CMD, 0xDEAF);
     delay(50);
 }
 
+/**
+ * @brief Initializes the IMU by performing a soft reset and configuring the accelerometer and gyroscope.
+ */
 void IMU::begin()
 {
     softReset();
@@ -91,6 +113,9 @@ void IMU::begin()
     delay(50);
 }
 
+/**
+ * @brief Reads all sensor data from the IMU and updates member variables.
+ */
 void IMU::read()
 {
     // readRegister16(0x02);
@@ -108,6 +133,9 @@ void IMU::read()
     // }
 }
 
+/**
+ * @brief Prints the current sensor data to the serial output in CSV format.
+ */
 void IMU::printData()
 {
     // Serial.print(" \tx:");
