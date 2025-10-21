@@ -32,7 +32,7 @@ pip install -r requirements.txt
 2) Start the consumer (stores into Postgres):
 
 ```bash
-python consumer.py
+python redisToPg.py
 ```
 
 3) Start an HTTP producer and send a sample payload:
