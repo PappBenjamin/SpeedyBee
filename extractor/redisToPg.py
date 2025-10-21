@@ -218,3 +218,6 @@ def main():
     elif args.action == 'both':
         create_and_process(args.count)
 
+if __name__ == '__main__':
+    main()
+
