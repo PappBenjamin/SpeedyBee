@@ -35,6 +35,8 @@ void forward(int speedA, int speedB);
 
 void settingPinsModes();
 
+void readSensorDataAndControl();
+
 void setup()
 {
   Serial.begin(115200);
@@ -47,9 +49,9 @@ void setup()
   // Set pin modes
   settingPinsModes();
 
-  // analogWrite(BUZZER, 255);
-  // delay(100);
-  // analogWrite(BUZZER, 0);
+  analogWrite(BUZZER, 255);
+  delay(100);
+  analogWrite(BUZZER, 0);
 
   // display
 
@@ -76,9 +78,9 @@ void setup()
   Serial.println("Setup done!");
   delay(1000);
 
-  // analogWrite(BUZZER, 255);
-  // delay(500);
-  // analogWrite(BUZZER, 0);
+  analogWrite(BUZZER, 255);
+  delay(500);
+  analogWrite(BUZZER, 0);
 }
 
 void loop()
@@ -93,6 +95,8 @@ void loop()
   //   displayPrint(String(KeypadNum).c_str());
   //   delay(200);
   // }
+
+  // readSensorDataAndControl();
 
   imu.read();
   imu.printData();
