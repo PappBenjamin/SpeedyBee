@@ -39,8 +39,8 @@ QUEUE = os.getenv('QUEUE', 'imu_queue')
 PG_HOST = os.getenv('PG_HOST', 'localhost')
 PG_PORT = int(os.getenv('PG_PORT', '5432'))
 PG_DB = os.getenv('PG_DB', 'postgres')
-PG_USER = os.getenv('PG_USER', 'postgres')
-PG_PASSWORD = os.getenv('PG_PASSWORD', '')
+PG_USER = os.getenv('PG_USER', 'user')
+PG_PASSWORD = os.getenv('PG_PASSWORD', 'password')
 
 # Connect to Redis
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
