@@ -21,20 +21,17 @@ Menu menu;
 // Menu state and handler
 MenuState currentMenuState = MAIN_MENU;
 
-//first speed
+// first speed
 
 // PID Constants        speed correction
-double Kp = 1.525;   /*       1.525          Increase Proportional control slightly for better response */
-double Kd = 0.001;  /*       0.0015 -> 0.0019        Increase Derivative for stability in curves */
+double Kp = 1.525; /*       1.525          Increase Proportional control slightly for better response */
+double Kd = 0.001; /*       0.0015 -> 0.0019        Increase Derivative for stability in curves */
 
-int currentError = 0; // Current position error
-double filteredError = 0;  // Use for low-pass filtering error
+int currentError = 0;     // Current position error
+double filteredError = 0; // Use for low-pass filtering error
 int lastError = 0;
 
 void forward(int speedA, int speedB);
-
-
-
 
 void settingPinsModes();
 
@@ -62,17 +59,17 @@ void setup()
   // Buzzer
   // playStartSong();
 
-  //IO Expander
-  // setupExpander();
-  displayPrint("Expander init");
+  // IO Expander
+  //  setupExpander();
+  // displayPrint("Expander init");
 
   // QTR Sensors
   displayPrint("QTR calibration ...");
   qtrCalibrate();
 
   // IMU
-  // displayPrint("IMU init");
-  // imu.begin();
+  displayPrint("IMU init");
+  imu.begin();
 
   displayPrint("Setup done!");
 
@@ -97,6 +94,15 @@ void loop()
   //   delay(200);
   // }
 
+  imu.read();
+  imu.printData();
+
+  delay(10); // Delay for readability
+}
+
+void readSensorDataAndControl()
+{
+
   u16_t QTRSensorValues[5];
   readQTRSensors(QTRSensorValues);
   printQTRSensorValues(QTRSensorValues);
@@ -109,7 +115,7 @@ void loop()
   Serial.println(currentError);
 
   // Low-pass filter on error
-  double alpha = 0.25;  // if alpha is closer to 1, less responsive but smoother
+  double alpha = 0.25; // if alpha is closer to 1, less responsive but smoother
   filteredError = alpha * filteredError + (1 - alpha) * currentError;
 
   Serial.print("Filtered Error: ");
@@ -121,35 +127,32 @@ void loop()
   Serial.print(" T Error: ");
   Serial.println(tanhError);
 
-// --- PD control calculation ---
-double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
+  // --- PD control calculation ---
+  double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
 
-// --- Base speeds ---
-int baseSpeed = 80;        // Normal forward speed
-int maxTurnSpeed = 90;     // Max extra speed added/subtracted for turning
+  // --- Base speeds ---
+  int baseSpeed = 80;    // Normal forward speed
+  int maxTurnSpeed = 90; // Max extra speed added/subtracted for turning
 
-// --- Apply correction symmetrically ---
-int leftSpeed  = baseSpeed - (int)(speedCorrection * maxTurnSpeed);
-int rightSpeed = baseSpeed + (int)(speedCorrection * maxTurnSpeed);
+  // --- Apply correction symmetrically ---
+  int leftSpeed = baseSpeed - (int)(speedCorrection * maxTurnSpeed);
+  int rightSpeed = baseSpeed + (int)(speedCorrection * maxTurnSpeed);
 
-// --- Limit motor speed ---
-leftSpeed  = constrain(leftSpeed, -200, 200);
-rightSpeed = constrain(rightSpeed, -200, 200);
+  // --- Limit motor speed ---
+  leftSpeed = constrain(leftSpeed, -200, 200);
+  rightSpeed = constrain(rightSpeed, -200, 200);
 
-// --- Debug ---
-Serial.print("Speed Correction: "); Serial.println(speedCorrection);
-Serial.print("Left Speed: "); Serial.println(leftSpeed);
-Serial.print("Right Speed: "); Serial.println(rightSpeed);
-
+  // --- Debug ---
+  Serial.print("Speed Correction: ");
+  Serial.println(speedCorrection);
+  Serial.print("Left Speed: ");
+  Serial.println(leftSpeed);
+  Serial.print("Right Speed: ");
+  Serial.println(rightSpeed);
 
   // Drive motors
   forward(leftSpeed, rightSpeed);
   lastError = filteredError;
-
-  // imu.read();
-  // imu.printData();
-
-  delay(10); // Delay for readability
 }
 
 void settingPinsModes()

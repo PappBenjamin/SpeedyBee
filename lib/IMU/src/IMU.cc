@@ -118,7 +118,8 @@ void IMU::begin()
  */
 void IMU::read()
 {
-    // readRegister16(0x02);
+    readRegister16(0x02);
+    readRegister16(0x02);
     // if (readRegister16(0x02) == 0x00)
     // {
     // Read ChipID
