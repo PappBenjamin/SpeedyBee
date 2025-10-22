@@ -47,9 +47,9 @@ void setup()
   // Set pin modes
   settingPinsModes();
 
-  analogWrite(BUZZER, 255);
-  delay(100);
-  analogWrite(BUZZER, 0);
+  // analogWrite(BUZZER, 255);
+  // delay(100);
+  // analogWrite(BUZZER, 0);
 
   // display
 
@@ -65,7 +65,7 @@ void setup()
 
   // QTR Sensors
   displayPrint("QTR calibration ...");
-  qtrCalibrate();
+  // qtrCalibrate();
 
   // IMU
   displayPrint("IMU init");
@@ -76,9 +76,9 @@ void setup()
   Serial.println("Setup done!");
   delay(1000);
 
-  analogWrite(BUZZER, 255);
-  delay(500);
-  analogWrite(BUZZER, 0);
+  // analogWrite(BUZZER, 255);
+  // delay(500);
+  // analogWrite(BUZZER, 0);
 }
 
 void loop()
