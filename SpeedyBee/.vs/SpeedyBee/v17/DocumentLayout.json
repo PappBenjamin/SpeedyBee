@@ -1,0 +1,91 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\.net\\speedybee\\speedybee\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\.net\\speedybee\\speedybee\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:4:0:{65ddf8c3-8f89-4077-a6c6-dbb8853aab13}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{26341fe2-71dd-46fd-bb1b-2e51a92a0d64}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "SpeedyBee\\MainWindow.xaml",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\MainWindow.xaml",
+              "RelativeToolTip": "SpeedyBee\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-10-26T19:32:03.172Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "SpeedyBee\\MainWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\MainWindow.xaml.cs",
+              "RelativeToolTip": "SpeedyBee\\MainWindow.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T19:31:54.216Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 156,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
