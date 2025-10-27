@@ -51,14 +51,29 @@ class StickWindow : GameWindow
         {
             var parts = line.Split(',', StringSplitOptions.TrimEntries);
             if (parts.Length < 6) continue;
-            if (float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float ax) &&
-                float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float ay) &&
-                float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float az) &&
-                float.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float rx) &&
-                float.TryParse(parts[4], NumberStyles.Float, CultureInfo.InvariantCulture, out float ry) &&
-                float.TryParse(parts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float rz))
+
+            if (int.TryParse(parts[0], out int ax) &&
+                int.TryParse(parts[1], out int ay) &&
+                int.TryParse(parts[2], out int az) &&
+                int.TryParse(parts[3], out int rx) &&
+                int.TryParse(parts[4], out int ry) &&
+                int.TryParse(parts[5], out int rz))
             {
-                _frames.Add((new Vector3(ax, ay, az), new Vector3(rx, ry, rz)));
+                // Convert raw accelerometer integers to small floats
+                Vector3 accel = new Vector3(
+                    (ax - 32768) / 10000f,
+                    (ay - 32768) / 10000f,
+                    (az - 32768) / 10000f
+                );
+
+                // Convert raw rotation integers (0-65535) to degrees 0-360
+                Vector3 rot = new Vector3(
+                    rx / 65535f * 360f,
+                    ry / 65535f * 360f,
+                    rz / 65535f * 360f
+                );
+
+                _frames.Add((accel, rot));
             }
         }
 
@@ -102,7 +117,13 @@ class StickWindow : GameWindow
 
         var (accel, rot) = _frames[_currentFrame];
 
-        Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(60f), Size.X / (float)Size.Y, 0.1f, 100f);
+        Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(
+            MathHelper.DegreesToRadians(60f),
+            Size.X / (float)Size.Y,
+            0.1f,
+            100f
+        );
+
         Matrix4 view = Matrix4.LookAt(new Vector3(0, 0, 5f), Vector3.Zero, Vector3.UnitY);
 
         Matrix4 model =
