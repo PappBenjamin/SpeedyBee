@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\SpeedyBee.csproj": {}
+    "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\SpeedyBee.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\SpeedyBee.csproj": {
+    "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\SpeedyBee.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\SpeedyBee.csproj",
+        "projectUniqueName": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\SpeedyBee.csproj",
         "projectName": "SpeedyBee",
-        "projectPath": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\SpeedyBee.csproj",
+        "projectPath": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\SpeedyBee.csproj",
         "packagesPath": "C:\\Users\\Abigel\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\.net\\SpeedyBee\\SpeedyBee\\obj\\",
+        "outputPath": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

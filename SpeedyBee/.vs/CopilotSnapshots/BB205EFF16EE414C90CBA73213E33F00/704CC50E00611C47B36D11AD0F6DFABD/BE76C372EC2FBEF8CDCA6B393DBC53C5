@@ -1,0 +1,82 @@
+﻿&lt;Page x:Class="SpeedyBee.Pages.RobotChoicePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Robot Selection">
+
+    &lt;StackPanel Margin="20">
+        &lt;TextBlock Text="Select Robot" 
+                   FontSize="24" 
+                   FontWeight="Bold"
+                   Margin="0,0,0,20"/>
+
+        &lt;Grid Margin="0,10">
+            &lt;Grid.RowDefinitions>
+                &lt;RowDefinition Height="Auto"/>
+                &lt;RowDefinition Height="Auto"/>
+            &lt;/Grid.RowDefinitions>
+            &lt;Grid.ColumnDefinitions>
+                &lt;ColumnDefinition Width="2*"/>
+                &lt;ColumnDefinition Width="3*"/>
+                &lt;ColumnDefinition Width="Auto"/>
+            &lt;/Grid.ColumnDefinitions>
+
+            &lt;TextBlock Text="Robot Name" 
+                       FontWeight="Bold" 
+                       Grid.Column="0"/>
+            &lt;TextBlock Text="Description" 
+                       FontWeight="Bold" 
+                       Grid.Column="1"/>
+            &lt;TextBlock Text="Action" 
+                       FontWeight="Bold" 
+                       Grid.Column="2"/>
+
+            &lt;Border Grid.Row="1" 
+                    Grid.ColumnSpan="3" 
+                    BorderBrush="Gray" 
+                    BorderThickness="0,1,0,0" 
+                    Margin="0,5"/>
+        &lt;/Grid>
+
+        &lt;!-- Robot 1 -->
+        &lt;Grid Margin="0,5">
+            &lt;Grid.ColumnDefinitions>
+                &lt;ColumnDefinition Width="2*"/>
+                &lt;ColumnDefinition Width="3*"/>
+                &lt;ColumnDefinition Width="Auto"/>
+            &lt;/Grid.ColumnDefinitions>
+            
+            &lt;TextBlock Text="SpeedyBee v1" 
+                       Grid.Column="0"/>
+            &lt;TextBlock Text="Prototype model for PD control tests" 
+                       Grid.Column="1"/>
+            &lt;Button Content="Select" 
+                    Grid.Column="2" 
+                    Padding="20,5"
+                    Click="SelectRobot_Click"
+                    Tag="v1"/>
+        &lt;/Grid>
+
+        &lt;!-- Robot 2 -->
+        &lt;Grid Margin="0,5">
+            &lt;Grid.ColumnDefinitions>
+                &lt;ColumnDefinition Width="2*"/>
+                &lt;ColumnDefinition Width="3*"/>
+                &lt;ColumnDefinition Width="Auto"/>
+            &lt;/Grid.ColumnDefinitions>
+            
+            &lt;TextBlock Text="SpeedyBee v2" 
+                       Grid.Column="0"/>
+            &lt;TextBlock Text="Competition-tuned version" 
+                       Grid.Column="1"/>
+            &lt;Button Content="Select" 
+                    Grid.Column="2" 
+                    Padding="20,5"
+                    Click="SelectRobot_Click"
+                    Tag="v2"/>
+        &lt;/Grid>
+
+        &lt;TextBlock x:Name="SelectedRobotText"
+                   Margin="0,20,0,0"
+                   FontWeight="Bold"/>
+    &lt;/StackPanel>
+&lt;/Page>

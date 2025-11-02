@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="SpeedyBee.Pages.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Home">
+    
+    <StackPanel Margin="20" HorizontalAlignment="Center">
+        <TextBlock Text="SpeedyBee" 
+                   FontSize="32" 
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20"/>
+        
+        <TextBlock TextWrapping="Wrap" 
+                   MaxWidth="600"
+                   Margin="0,0,0,30"
+                   TextAlignment="Center">
+            SpeedyBee is a line follower robot designed for RoboChallenge 2025. 
+            It uses IMU and line sensors for real-time path tracking and PD control tuning.
+        </TextBlock>
+
+        <StackPanel Orientation="Horizontal" 
+                    HorizontalAlignment="Center" 
+                    Margin="0,20">
+            <Button Content="Select Robot" 
+                    Margin="10"
+                    Padding="20,10"
+                    Click="SelectRobot_Click"/>
+            <Button Content="Open 3D Visualization" 
+                    Margin="10"
+                    Padding="20,10"
+                    Click="OpenVisualization_Click"/>
+        </StackPanel>
+    </StackPanel>
+</Page>
