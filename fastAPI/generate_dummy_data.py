@@ -72,7 +72,7 @@ def generate_dummy_data(count=10):
 
         print(f"Created item {i+1}/{count}: {json_data}")
 
-    print(f"✅ Finished generating {count} dummy data items!")
+    print(f"Finished generating {count} dummy data items!")
     return count
 
 
@@ -98,9 +98,9 @@ def generate_and_push_to_db(count=10):
             password=PG_PASSWORD
         )
         cursor = conn.cursor()
-        print("✅ Connected to PostgreSQL")
+        print("Connected to PostgreSQL")
     except Exception as e:
-        print(f"❌ Could not connect to PostgreSQL: {e}")
+        print(f"Could not connect to PostgreSQL: {e}")
         return 0
 
     saved_count = 0
@@ -130,16 +130,16 @@ def generate_and_push_to_db(count=10):
                 print(f"Created and saved item {saved_count}/{count}")
             except Exception as e:
                 conn.rollback()
-                print(f"❌ Error saving item {i+1}: {e}")
+                print(f"Error saving item {i+1}: {e}")
 
     except KeyboardInterrupt:
-        print("\n⚠️  Process stopped by user")
+        print("\nProcess stopped by user")
     finally:
         cursor.close()
         conn.close()
-        print(f"✅ Database connection closed")
+        print(f"Database connection closed")
 
-    print(f"✅ Finished! Generated and saved {saved_count}/{count} dummy data items to database!")
+    print(f"Finished! Generated and saved {saved_count}/{count} dummy data items to database!")
     return saved_count
 
 
@@ -156,24 +156,15 @@ def main():
         help='Number of items to generate (default: 10)'
     )
 
-    parser.add_argument(
-        '--queue-only',
-        action='store_true',
-        help='Only push to Redis queue (old behavior, requires extractor)'
-    )
 
     args = parser.parse_args()
 
     # Generate the data
-    if args.queue_only:
-        print("📝 Queue-only mode: pushing to Redis queue...")
-        generated = generate_dummy_data(args.count)
-        print(f"\n💡 To process this data, run:")
-        print(f"   cd extractor && python redisToPg.py process")
-    else:
-        print("🚀 Direct mode: generating and saving to database...")
-        saved = generate_and_push_to_db(args.count)
-        print(f"\n🎉 All done! No need to run the extractor!")
+    if args.count <= 0:
+        print("Count must be a positive integer.")
+        return
+
+    generate_and_push_to_db(count=args.count)
 
 
 if __name__ == '__main__':

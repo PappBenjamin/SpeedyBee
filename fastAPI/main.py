@@ -52,6 +52,21 @@ def push_dummy_to_redis():
     return {"status": "ok", "data": imu_data}
 
 
+@app.post("/push-dummy-to-db")
+def push_dummy_to_database():
+    """Generate dummy IMU data and push directly to database"""
+    from generate_dummy_data import create_dummy_imu_data
+    from db_pusher import push_imu_to_database
+
+    imu_data = create_dummy_imu_data()
+    success = push_imu_to_database(imu_data)
+
+    if success:
+        return {"status": "ok", "message": "Dummy data saved to database", "data": imu_data}
+    else:
+        return JSONResponse(content={"status": "error", "message": "Failed to save to database", "data": imu_data}, status_code=500)
+
+
 @app.get("/get")
 def get_from_redis():
     """Get data from Redis key"""
@@ -60,4 +75,3 @@ def get_from_redis():
         return {"data": data.decode('utf-8')}
     else:
         return JSONResponse(content={"status": "no data"}, status_code=404)
-
