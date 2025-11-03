@@ -41,6 +41,17 @@ def push_parsed_to_redis():
     else:
         return JSONResponse(content={"status": "no data"}, status_code=404)
 
+
+@app.post("/push-dummy")
+def push_dummy_to_redis():
+    """Push dummy IMU data to Redis key"""
+    from generate_dummy_data import create_dummy_imu_data
+
+    imu_data = create_dummy_imu_data()
+    r.set(REDIS_KEY, str(imu_data))
+    return {"status": "ok", "data": imu_data}
+
+
 @app.get("/get")
 def get_from_redis():
     """Get data from Redis key"""
@@ -49,3 +60,4 @@ def get_from_redis():
         return {"data": data.decode('utf-8')}
     else:
         return JSONResponse(content={"status": "no data"}, status_code=404)
+

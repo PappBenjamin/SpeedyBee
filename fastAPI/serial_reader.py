@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SERIAL_PORT = '/dev/ttyACM0'
+SERIAL_PORT = '/dev/cu.usbmodem2101'  # Update as needed
 BAUD_RATE = 115200
 
 
