@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SpeedyBee")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ef7bb978a4150c82e12693924992c1261a564764")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+da87a804b2f3cff470e0960b2fe1ef9619def193")]
 [assembly: System.Reflection.AssemblyProductAttribute("SpeedyBee")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SpeedyBee")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
