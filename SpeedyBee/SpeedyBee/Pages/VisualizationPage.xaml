@@ -2,7 +2,7 @@
 <Page x:Class="SpeedyBee.Pages.VisualizationPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Title="3D Visualization">
+      Title="3D Motion Visualization">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -11,21 +11,54 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="3D Visualization - Coming Soon"
+        <TextBlock Text="3D Motion Visualization"
                    FontSize="24"
                    FontWeight="Bold"
                    Margin="0,0,0,20"/>
 
         <Border Grid.Row="1" 
-                Background="#FAFAFA"
+                Background="#1A1A1A"
                 BorderBrush="Gray"
                 BorderThickness="1"
                 Margin="0,10">
-            <Viewport3D>
-                <!-- Placeholder for 3D content -->
+            <Viewport3D x:Name="viewport">
                 <Viewport3D.Camera>
-                    <PerspectiveCamera Position="0,0,5" LookDirection="0,0,-1" UpDirection="0,1,0"/>
+                    <PerspectiveCamera x:Name="camera" 
+                                     Position="0,0,5" 
+                                     LookDirection="0,0,-1" 
+                                     UpDirection="0,1,0"
+                                     FieldOfView="60"/>
                 </Viewport3D.Camera>
+                
+                <!-- Lighting -->
+                <ModelVisual3D>
+                    <ModelVisual3D.Content>
+                        <DirectionalLight Color="White" Direction="-1,-1,-1"/>
+                    </ModelVisual3D.Content>
+                </ModelVisual3D>
+                <ModelVisual3D>
+                    <ModelVisual3D.Content>
+                        <AmbientLight Color="#404040"/>
+                    </ModelVisual3D.Content>
+                </ModelVisual3D>
+                
+                <!-- Stick model -->
+                <ModelVisual3D x:Name="stickModel">
+                    <ModelVisual3D.Content>
+                        <GeometryModel3D x:Name="stickGeometry">
+                            <GeometryModel3D.Geometry>
+                                <MeshGeometry3D x:Name="stickMesh"/>
+                            </GeometryModel3D.Geometry>
+                            <GeometryModel3D.Material>
+                                <DiffuseMaterial>
+                                    <DiffuseMaterial.Brush>
+                                        <SolidColorBrush Color="#FFE619"/>
+                                    </DiffuseMaterial.Brush>
+                                </DiffuseMaterial>
+                            </GeometryModel3D.Material>
+                        </GeometryModel3D>
+                    </ModelVisual3D.Content>
+                </ModelVisual3D>
             </Viewport3D>
         </Border>
 
@@ -33,15 +66,25 @@
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
                     Margin="0,20,0,0">
-            <Button Content="Start Simulation" 
+            <Button x:Name="btnStart" 
+                    Content="Start" 
+                    Click="BtnStart_Click"
                     Margin="5" 
-                    Padding="15,5"/>
-            <Button Content="Pause" 
+                    Padding="15,5"
+                    Width="100"/>
+            <Button x:Name="btnPause" 
+                    Content="Pause" 
+                    Click="BtnPause_Click"
                     Margin="5" 
-                    Padding="15,5"/>
-            <Button Content="Reset" 
+                    Padding="15,5"
+                    Width="100"
+                    IsEnabled="False"/>
+            <Button x:Name="btnReset" 
+                    Content="Reset" 
+                    Click="BtnReset_Click"
                     Margin="5" 
-                    Padding="15,5"/>
+                    Padding="15,5"
+                    Width="100"/>
         </StackPanel>
     </Grid>
 </Page>
