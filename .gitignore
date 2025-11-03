@@ -3,3 +3,101 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+
+## Build artifacts
+bin/
+obj/
+out/
+[Bb]uild/
+[Ll]og/
+[Ll]ogs/
+
+## User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.userprefs
+
+## Visual Studio / VS Code
+.vscode/
+.vs/
+.idea/
+*.code-workspace
+
+## Rider
+.idea/
+*.sln.iml
+
+## Backup / temp
+*.bak
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+## .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+launchSettings.json
+
+## NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+.nuget/
+packages/
+*.lock.json
+
+## Resharper / JetBrains
+_ReSharper*/
+*.DotSettings.user
+
+## Testing
+TestResult*/
+TestResults/
+*.VisualState.xml
+*.coverage
+*.coveragexml
+*.testlog
+*.trx
+
+## Logs
+*.log
+
+## OS-specific
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## Crash dumps
+*.dmp
+*.mdmp
+
+## OpenGL / OpenTK specific
+# (if you save compiled shaders or screenshots)
+*.shadercache
+*.png
+*.jpg
+
+## Ignore generated documentation
+docs/
+docfx/
+*.xml
+
+## IDE caches
+.cache/
+.caches/
