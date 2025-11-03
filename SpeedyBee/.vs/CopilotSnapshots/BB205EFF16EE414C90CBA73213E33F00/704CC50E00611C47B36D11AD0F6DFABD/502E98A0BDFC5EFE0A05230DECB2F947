@@ -1,0 +1,46 @@
+﻿&lt;Page x:Class="SpeedyBee.Pages.VisualizationPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="3D Visualization">
+
+    &lt;Grid Margin="20">
+        &lt;Grid.RowDefinitions>
+            &lt;RowDefinition Height="Auto"/>
+            &lt;RowDefinition Height="*"/>
+            &lt;RowDefinition Height="Auto"/>
+        &lt;/Grid.RowDefinitions>
+
+        &lt;TextBlock Text="3D Visualization — Coming Soon"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Margin="0,0,0,20"/>
+
+        &lt;Border Grid.Row="1" 
+                Background="#FAFAFA"
+                BorderBrush="Gray"
+                BorderThickness="1"
+                Margin="0,10">
+            &lt;Viewport3D>
+                &lt;!-- Placeholder for 3D content -->
+                &lt;Viewport3D.Camera>
+                    &lt;PerspectiveCamera Position="0,0,5" LookDirection="0,0,-1" UpDirection="0,1,0"/>
+                &lt;/Viewport3D.Camera>
+            &lt;/Viewport3D>
+        &lt;/Border>
+
+        &lt;StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Center"
+                    Margin="0,20,0,0">
+            &lt;Button Content="Start Simulation" 
+                    Margin="5" 
+                    Padding="15,5"/>
+            &lt;Button Content="Pause" 
+                    Margin="5" 
+                    Padding="15,5"/>
+            &lt;Button Content="Reset" 
+                    Margin="5" 
+                    Padding="15,5"/>
+        &lt;/StackPanel>
+    &lt;/Grid>
+&lt;/Page>

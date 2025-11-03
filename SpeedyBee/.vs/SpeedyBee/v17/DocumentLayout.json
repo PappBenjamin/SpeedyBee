@@ -1,0 +1,218 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\pages\\homepage.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\pages\\homepage.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\pages\\robotchoicepage.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\pages\\robotchoicepage.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\pages\\aboutpage.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\pages\\aboutpage.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\pages\\visualizationpage.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\pages\\visualizationpage.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\pages\\homepage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\pages\\homepage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\pages\\robotchoicepage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\pages\\robotchoicepage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\pages\\visualizationpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\pages\\visualizationpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|c:\\users\\abigel\\documents\\work\\egyetem\\speedybee\\speedybee\\speedybee\\pages\\aboutpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D4B957-6D61-4770-A166-C8B31F614BC5}|SpeedyBee\\SpeedyBee.csproj|solutionrelative:speedybee\\pages\\aboutpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 6,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:4:0:{65ddf8c3-8f89-4077-a6c6-dbb8853aab13}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{26341fe2-71dd-46fd-bb1b-2e51a92a0d64}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "RobotChoicePage.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\RobotChoicePage.xaml.cs",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\RobotChoicePage.xaml.cs",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\RobotChoicePage.xaml.cs",
+              "RelativeToolTip": "SpeedyBee\\Pages\\RobotChoicePage.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T19:48:40.707Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "HomePage.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\HomePage.xaml.cs",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\HomePage.xaml.cs",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\HomePage.xaml.cs",
+              "RelativeToolTip": "SpeedyBee\\Pages\\HomePage.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T19:48:40.564Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AboutPage.xaml",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\AboutPage.xaml",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\AboutPage.xaml",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\AboutPage.xaml",
+              "RelativeToolTip": "SpeedyBee\\Pages\\AboutPage.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACcAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-10-26T19:43:16.527Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "SpeedyBee\\MainWindow.xaml",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\MainWindow.xaml",
+              "RelativeToolTip": "SpeedyBee\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-10-26T19:32:03.172Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "VisualizationPage.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\VisualizationPage.xaml.cs",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\VisualizationPage.xaml.cs",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\VisualizationPage.xaml.cs",
+              "RelativeToolTip": "SpeedyBee\\Pages\\VisualizationPage.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T19:48:40.802Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "RobotChoicePage.xaml",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\RobotChoicePage.xaml",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\RobotChoicePage.xaml",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\RobotChoicePage.xaml",
+              "RelativeToolTip": "SpeedyBee\\Pages\\RobotChoicePage.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFIAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-10-26T19:42:57.682Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "HomePage.xaml",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\HomePage.xaml",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\HomePage.xaml",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\HomePage.xaml",
+              "RelativeToolTip": "SpeedyBee\\Pages\\HomePage.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-10-26T19:42:43.758Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AboutPage.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\AboutPage.xaml.cs",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\AboutPage.xaml.cs",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\AboutPage.xaml.cs",
+              "RelativeToolTip": "SpeedyBee\\Pages\\AboutPage.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T19:48:40.868Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "VisualizationPage.xaml",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\VisualizationPage.xaml",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\VisualizationPage.xaml",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\VisualizationPage.xaml",
+              "RelativeToolTip": "SpeedyBee\\Pages\\VisualizationPage.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC4AAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-10-26T19:43:41.605Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "SpeedyBee\\MainWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\MainWindow.xaml.cs",
+              "RelativeToolTip": "SpeedyBee\\MainWindow.xaml.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T19:31:54.216Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 156,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
