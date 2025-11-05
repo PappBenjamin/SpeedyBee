@@ -42,17 +42,35 @@
                     </ModelVisual3D.Content>
                 </ModelVisual3D>
                 
-                <!-- Stick model -->
-                <ModelVisual3D x:Name="stickModel">
+                <!-- Robot body (yellow) -->
+                <ModelVisual3D x:Name="bodyModel">
                     <ModelVisual3D.Content>
-                        <GeometryModel3D x:Name="stickGeometry">
+                        <GeometryModel3D x:Name="bodyGeometry">
                             <GeometryModel3D.Geometry>
-                                <MeshGeometry3D x:Name="stickMesh"/>
+                                <MeshGeometry3D x:Name="bodyMesh"/>
                             </GeometryModel3D.Geometry>
                             <GeometryModel3D.Material>
                                 <DiffuseMaterial>
                                     <DiffuseMaterial.Brush>
                                         <SolidColorBrush Color="#FFE619"/>
+                                    </DiffuseMaterial.Brush>
+                                </DiffuseMaterial>
+                            </GeometryModel3D.Material>
+                        </GeometryModel3D>
+                    </ModelVisual3D.Content>
+                </ModelVisual3D>
+
+                <!-- Robot head (red top part) -->
+                <ModelVisual3D x:Name="headModel">
+                    <ModelVisual3D.Content>
+                        <GeometryModel3D x:Name="headGeometry">
+                            <GeometryModel3D.Geometry>
+                                <MeshGeometry3D x:Name="headMesh"/>
+                            </GeometryModel3D.Geometry>
+                            <GeometryModel3D.Material>
+                                <DiffuseMaterial>
+                                    <DiffuseMaterial.Brush>
+                                        <SolidColorBrush Color="Red"/>
                                     </DiffuseMaterial.Brush>
                                 </DiffuseMaterial>
                             </GeometryModel3D.Material>

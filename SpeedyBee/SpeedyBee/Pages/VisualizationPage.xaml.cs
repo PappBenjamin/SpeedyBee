@@ -16,7 +16,7 @@ namespace SpeedyBee.Pages
         private List<MotionFrame> _frames = new();
         private int _currentFrame = 0;
         private DispatcherTimer _timer;
-        private Transform3DGroup _stickTransform;
+        private Transform3DGroup _robotTransform;
         private bool _isPlaying = false;
 
         public VisualizationPage()
@@ -28,12 +28,17 @@ namespace SpeedyBee.Pages
 
         private void InitializeVisualization()
         {
-            // Create stick geometry (a line represented as a thin cylinder)
-            CreateStickGeometry();
+            // Create robot body geometry (yellow rectangular prism)
+            CreateBodyGeometry();
 
-            // Initialize transform group
-            _stickTransform = new Transform3DGroup();
-            stickModel.Transform = _stickTransform;
+            // Create robot head geometry (red rectangular prism - top part)
+            CreateHeadGeometry();
+
+            // Initialize transform group (shared by both body and head)
+            _robotTransform = new Transform3DGroup();
+
+            bodyModel.Transform = _robotTransform;
+            headModel.Transform = _robotTransform;
 
             // Initialize timer for animation
             _timer = new DispatcherTimer
@@ -43,21 +48,21 @@ namespace SpeedyBee.Pages
             _timer.Tick += Timer_Tick;
         }
 
-        private void CreateStickGeometry()
+        private void CreateBodyGeometry()
         {
             var mesh = new MeshGeometry3D();
-            
-            // Create a simple stick as a thin rectangular prism
-            double length = 1.0;
+
+            // Create robot body as a rectangular prism (most of the stick - yellow)
+            double length = 0.8;  // Body is 80% of total length
             double thickness = 0.05;
 
-            // Define vertices for a rectangular stick
+            // Define vertices for the body (centered at origin)
             // Bottom rectangle
             mesh.Positions.Add(new Point3D(-thickness, -length / 2, -thickness));
             mesh.Positions.Add(new Point3D(thickness, -length / 2, -thickness));
             mesh.Positions.Add(new Point3D(thickness, -length / 2, thickness));
             mesh.Positions.Add(new Point3D(-thickness, -length / 2, thickness));
-            
+
             // Top rectangle
             mesh.Positions.Add(new Point3D(-thickness, length / 2, -thickness));
             mesh.Positions.Add(new Point3D(thickness, length / 2, -thickness));
@@ -68,29 +73,79 @@ namespace SpeedyBee.Pages
             // Bottom face
             mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(1);
             mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(2);
-            
+
             // Top face
             mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(5); mesh.TriangleIndices.Add(6);
             mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(6); mesh.TriangleIndices.Add(7);
-            
+
             // Front face
             mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(5);
             mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(5); mesh.TriangleIndices.Add(4);
-            
+
             // Back face
             mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(7);
             mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(7); mesh.TriangleIndices.Add(6);
-            
+
             // Left face
             mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(4);
             mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(7);
-            
+
             // Right face
             mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(6);
             mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(6); mesh.TriangleIndices.Add(5);
 
-            stickMesh.Positions = mesh.Positions;
-            stickMesh.TriangleIndices = mesh.TriangleIndices;
+            bodyMesh.Positions = mesh.Positions;
+            bodyMesh.TriangleIndices = mesh.TriangleIndices;
+        }
+
+        private void CreateHeadGeometry()
+        {
+            var mesh = new MeshGeometry3D();
+
+            // Create robot head as a small red rectangular prism (top part of the stick)
+            double headLength = 0.2;  // Head is 20% of total length
+            double thickness = 0.05;
+
+            // Define vertices for the head (positioned above the body)
+            // Bottom rectangle (connects to top of body)
+            mesh.Positions.Add(new Point3D(-thickness, 0.4 - headLength / 2, -thickness));
+            mesh.Positions.Add(new Point3D(thickness, 0.4 - headLength / 2, -thickness));
+            mesh.Positions.Add(new Point3D(thickness, 0.4 - headLength / 2, thickness));
+            mesh.Positions.Add(new Point3D(-thickness, 0.4 - headLength / 2, thickness));
+
+            // Top rectangle
+            mesh.Positions.Add(new Point3D(-thickness, 0.4 + headLength / 2, -thickness));
+            mesh.Positions.Add(new Point3D(thickness, 0.4 + headLength / 2, -thickness));
+            mesh.Positions.Add(new Point3D(thickness, 0.4 + headLength / 2, thickness));
+            mesh.Positions.Add(new Point3D(-thickness, 0.4 + headLength / 2, thickness));
+
+            // Define triangles for all faces
+            // Bottom face
+            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(1);
+            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(2);
+
+            // Top face
+            mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(5); mesh.TriangleIndices.Add(6);
+            mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(6); mesh.TriangleIndices.Add(7);
+
+            // Front face
+            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(5);
+            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(5); mesh.TriangleIndices.Add(4);
+
+            // Back face
+            mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(7);
+            mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(7); mesh.TriangleIndices.Add(6);
+
+            // Left face
+            mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(4);
+            mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(7);
+
+            // Right face
+            mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(6);
+            mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(6); mesh.TriangleIndices.Add(5);
+
+            headMesh.Positions = mesh.Positions;
+            headMesh.TriangleIndices = mesh.TriangleIndices;
         }
 
         private void LoadMotionData()
@@ -157,25 +212,26 @@ namespace SpeedyBee.Pages
 
             var frame = _frames[_currentFrame];
 
-            _stickTransform.Children.Clear();
+            // Update robot transform (shared by both body and head)
+            _robotTransform.Children.Clear();
 
             // Apply rotation transformations (in degrees)
             var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), frame.Rotation.X);
             var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), frame.Rotation.Y);
             var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), frame.Rotation.Z);
 
-            _stickTransform.Children.Add(new RotateTransform3D(rotateX));
-            _stickTransform.Children.Add(new RotateTransform3D(rotateY));
-            _stickTransform.Children.Add(new RotateTransform3D(rotateZ));
+            _robotTransform.Children.Add(new RotateTransform3D(rotateX));
+            _robotTransform.Children.Add(new RotateTransform3D(rotateY));
+            _robotTransform.Children.Add(new RotateTransform3D(rotateZ));
 
             // Apply translation (acceleration data)
-            _stickTransform.Children.Add(new TranslateTransform3D(
+            _robotTransform.Children.Add(new TranslateTransform3D(
                 frame.Acceleration.X,
                 frame.Acceleration.Y,
                 frame.Acceleration.Z
             ));
 
-            // Update camera to follow the stick
+            // Update camera to follow the robot
             UpdateCameraPosition(frame.Acceleration);
         }
 
@@ -230,8 +286,8 @@ namespace SpeedyBee.Pages
             _currentFrame = 0;
             _isPlaying = false;
 
-            // Reset transform
-            _stickTransform.Children.Clear();
+            // Reset robot transform
+            _robotTransform.Children.Clear();
 
             // Reset camera to initial position
             camera.Position = new Point3D(0, 0, 5);
