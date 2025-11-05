@@ -156,7 +156,7 @@ namespace SpeedyBee.Pages
             if (_frames.Count == 0 || _currentFrame >= _frames.Count) return;
 
             var frame = _frames[_currentFrame];
-            
+
             _stickTransform.Children.Clear();
 
             // Apply rotation transformations (in degrees)
@@ -174,6 +174,32 @@ namespace SpeedyBee.Pages
                 frame.Acceleration.Y,
                 frame.Acceleration.Z
             ));
+
+            // Update camera to follow the stick
+            UpdateCameraPosition(frame.Acceleration);
+        }
+
+        private void UpdateCameraPosition(Vector3 stickPosition)
+        {
+            // Camera follows the stick at a fixed distance
+            double cameraDistance = 5.0; // Distance from camera to stick
+            double cameraHeight = 2.0;   // Height offset for better viewing angle
+
+            // Position camera behind and above the stick
+            camera.Position = new Point3D(
+                stickPosition.X,
+                stickPosition.Y + cameraHeight,
+                stickPosition.Z + cameraDistance
+            );
+
+            // Look at the stick's current position
+            Vector3D lookDirection = new Vector3D(
+                stickPosition.X - camera.Position.X,
+                stickPosition.Y - camera.Position.Y,
+                stickPosition.Z - camera.Position.Z
+            );
+
+            camera.LookDirection = lookDirection;
         }
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
@@ -203,10 +229,14 @@ namespace SpeedyBee.Pages
             _timer.Stop();
             _currentFrame = 0;
             _isPlaying = false;
-            
+
             // Reset transform
             _stickTransform.Children.Clear();
-            
+
+            // Reset camera to initial position
+            camera.Position = new Point3D(0, 0, 5);
+            camera.LookDirection = new Vector3D(0, 0, -1);
+
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
         }
