@@ -224,10 +224,10 @@ namespace SpeedyBee.Pages
             _robotTransform.Children.Add(new RotateTransform3D(rotateY));
             _robotTransform.Children.Add(new RotateTransform3D(rotateZ));
 
-            // Apply translation (acceleration data)
+            // Apply translation (acceleration data + base offset to sit on ground)
             _robotTransform.Children.Add(new TranslateTransform3D(
                 frame.Acceleration.X,
-                frame.Acceleration.Y,
+                frame.Acceleration.Y + 0.4, // Offset to make robot sit on ground
                 frame.Acceleration.Z
             ));
 
@@ -241,17 +241,17 @@ namespace SpeedyBee.Pages
             double cameraDistance = 5.0; // Distance from camera to stick
             double cameraHeight = 2.0;   // Height offset for better viewing angle
 
-            // Position camera behind and above the stick
+            // Position camera behind and above the stick (accounting for ground offset)
             camera.Position = new Point3D(
                 stickPosition.X,
-                stickPosition.Y + cameraHeight,
+                stickPosition.Y + cameraHeight + 0.4, // Account for robot sitting on ground
                 stickPosition.Z + cameraDistance
             );
 
-            // Look at the stick's current position
+            // Look at the stick's current position (accounting for ground offset)
             Vector3D lookDirection = new Vector3D(
                 stickPosition.X - camera.Position.X,
-                stickPosition.Y - camera.Position.Y,
+                (stickPosition.Y + 0.4) - camera.Position.Y, // Look at robot on ground
                 stickPosition.Z - camera.Position.Z
             );
 
