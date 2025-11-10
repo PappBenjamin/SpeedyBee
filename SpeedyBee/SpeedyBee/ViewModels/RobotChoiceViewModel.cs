@@ -46,14 +46,14 @@ namespace SpeedyBee.ViewModels
         }
 
         private double _baseSpeed = 50.0;
-        public double BaseSpeed
+        public double baseSpeed
         {
             get => _baseSpeed;
             set => SetProperty(ref _baseSpeed, value);
         }
 
         private double _maxTurnSpeed = 100.0;
-        public double MaxTurnSpeed
+        public double maxTurnSpeed
         {
             get => _maxTurnSpeed;
             set => SetProperty(ref _maxTurnSpeed, value);
@@ -89,8 +89,8 @@ namespace SpeedyBee.ViewModels
                 serialPort.Open();
                 
                 // Send parameters to the robot
-                // Format: "PID,Kp,Kd,BaseSpeed,MaxTurnSpeed\n"
-                string command = $"PID,{Kp:F6},{Kd:F6},{BaseSpeed:F6},{MaxTurnSpeed:F6}\n";
+                // Format: "PID,Kp,Kd,baseSpeed,maxTurnSpeed\n"
+                string command = $"{Kp:F6},{Kd:F6},{baseSpeed:F6},{maxTurnSpeed:F6}\n";
                 serialPort.Write(command);
                 
                 serialPort.Close();

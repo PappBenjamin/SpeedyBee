@@ -159,7 +159,7 @@
                         <TextBox Grid.Row="2" 
                                 Grid.Column="1"
                                 Margin="0,0,0,5"
-                                Text="{Binding BaseSpeed, UpdateSourceTrigger=PropertyChanged}"/>
+                                Text="{Binding baseSpeed , UpdateSourceTrigger=PropertyChanged}"/>
 
                         <!-- Max turn speed -->
                         <TextBlock Text="Max turn speed:" 
@@ -170,7 +170,7 @@
                         <TextBox Grid.Row="3" 
                                 Grid.Column="1"
                                 Margin="0,0,0,5"
-                                Text="{Binding MaxTurnSpeed, UpdateSourceTrigger=PropertyChanged}"/>
+                                Text="{Binding maxTurnSpeed , UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
 
                     <Button Content="Update Parameters" 
