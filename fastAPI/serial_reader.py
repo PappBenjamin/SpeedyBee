@@ -25,7 +25,7 @@ def read_serial_line(port=SERIAL_PORT, baud_rate=BAUD_RATE):
         str: The raw line read from serial, or None if error.
     """
     try:
-        with serial.Serial(port, baud_rate, timeout=1) as ser:
+        with serial.Serial(port, baud_rate, timeout=2) as ser:
             line = ser.readline().decode('utf-8').strip()
             logger.info(f"Read line from serial: {line}")
             return line
@@ -47,8 +47,8 @@ def parse_imu_data(raw_data):
 
     try:
         parts = raw_data.split(',')
-        if len(parts) != 6:
-            logger.error(f"Unexpected data format: {raw_data} (expected 6 values, got {len(parts)})")
+        if len(parts) != 7:
+            logger.error(f"Unexpected data format: {raw_data}")
             return None
 
         imu_data = {
@@ -58,7 +58,8 @@ def parse_imu_data(raw_data):
             "accel_z": float(parts[2]),
             "gyro_x": float(parts[3]),
             "gyro_y": float(parts[4]),
-            "gyro_z": float(parts[5])
+            "gyro_z": float(parts[5]),
+            "temperature": float(parts[6])
         }
         logger.info(f"Parsed IMU data: {imu_data}")
         return imu_data
@@ -77,3 +78,4 @@ def read_and_parse_imu(port=SERIAL_PORT, baud_rate=BAUD_RATE):
 
     raw_data = read_serial_line(port, baud_rate)
     return parse_imu_data(raw_data)
+
