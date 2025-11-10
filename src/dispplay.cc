@@ -16,13 +16,17 @@ void displayClear()
   display.display();
 }
 
-void displayPrint(const char *text)
+void displayPrint(const char *text, double value)
 {
   display.clearDisplay();
   display.setTextSize(2.5);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 29.5);
-  display.println(text);
+  display.print(text);
+  if (value != -1)
+  {
+    display.println(value);
+  }
   display.display();
   delay(200);
 }
