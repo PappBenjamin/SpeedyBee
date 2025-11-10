@@ -28,14 +28,17 @@ namespace SpeedyBee.Pages
 
         private void InitializeVisualization()
         {
-            // Create robot body geometry (yellow rectangular prism)
-            CreateBodyGeometry();
+            // Load robot 3D model from OBJ file
+            LoadRobotModel();
 
-            // Create robot head geometry (red rectangular prism - top part)
-            CreateHeadGeometry();
-
-            // Initialize transform group (shared by both body and head)
+            // Initialize transform group (shared by the robot model)
             _robotTransform = new Transform3DGroup();
+
+            // Scale down the robot very much
+            _robotTransform.Children.Add(new ScaleTransform3D(0.01, 0.01, 0.01));
+
+            // Rotate the robot front 90 degrees to the left
+            _robotTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)));
 
             bodyModel.Transform = _robotTransform;
             headModel.Transform = _robotTransform;
@@ -48,105 +51,78 @@ namespace SpeedyBee.Pages
             _timer.Tick += Timer_Tick;
         }
 
-        private void CreateBodyGeometry()
+        private void LoadRobotModel()
         {
-            var mesh = new MeshGeometry3D();
+            try
+            {
+                string objPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "robot.obj");
 
-            // Create robot body as a rectangular prism (most of the stick - yellow)
-            double length = 0.8;  // Body is 80% of total length
-            double thickness = 0.05;
+                if (!File.Exists(objPath))
+                {
+                    MessageBox.Show($"Robot model file not found at: {objPath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
-            // Define vertices for the body (centered at origin)
-            // Bottom rectangle
-            mesh.Positions.Add(new Point3D(-thickness, -length / 2, -thickness));
-            mesh.Positions.Add(new Point3D(thickness, -length / 2, -thickness));
-            mesh.Positions.Add(new Point3D(thickness, -length / 2, thickness));
-            mesh.Positions.Add(new Point3D(-thickness, -length / 2, thickness));
+                var mesh = LoadObjMesh(objPath);
+                bodyMesh.Positions = mesh.Positions;
+                bodyMesh.TriangleIndices = mesh.TriangleIndices;
 
-            // Top rectangle
-            mesh.Positions.Add(new Point3D(-thickness, length / 2, -thickness));
-            mesh.Positions.Add(new Point3D(thickness, length / 2, -thickness));
-            mesh.Positions.Add(new Point3D(thickness, length / 2, thickness));
-            mesh.Positions.Add(new Point3D(-thickness, length / 2, thickness));
-
-            // Define triangles for all faces
-            // Bottom face
-            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(1);
-            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(2);
-
-            // Top face
-            mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(5); mesh.TriangleIndices.Add(6);
-            mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(6); mesh.TriangleIndices.Add(7);
-
-            // Front face
-            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(5);
-            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(5); mesh.TriangleIndices.Add(4);
-
-            // Back face
-            mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(7);
-            mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(7); mesh.TriangleIndices.Add(6);
-
-            // Left face
-            mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(4);
-            mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(7);
-
-            // Right face
-            mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(6);
-            mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(6); mesh.TriangleIndices.Add(5);
-
-            bodyMesh.Positions = mesh.Positions;
-            bodyMesh.TriangleIndices = mesh.TriangleIndices;
+                // Clear head mesh since we're using a single model
+                headMesh.Positions.Clear();
+                headMesh.TriangleIndices.Clear();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading robot model: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void CreateHeadGeometry()
+        private MeshGeometry3D LoadObjMesh(string filePath)
         {
             var mesh = new MeshGeometry3D();
+            var vertices = new List<Point3D>();
+            var indices = new List<int>();
 
-            // Create robot head as a small red rectangular prism (top part of the stick)
-            double headLength = 0.2;  // Head is 20% of total length
-            double thickness = 0.05;
+            foreach (var line in File.ReadLines(filePath))
+            {
+                var parts = line.Trim().Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 0) continue;
 
-            // Define vertices for the head (positioned above the body)
-            // Bottom rectangle (connects to top of body)
-            mesh.Positions.Add(new Point3D(-thickness, 0.4 - headLength / 2, -thickness));
-            mesh.Positions.Add(new Point3D(thickness, 0.4 - headLength / 2, -thickness));
-            mesh.Positions.Add(new Point3D(thickness, 0.4 - headLength / 2, thickness));
-            mesh.Positions.Add(new Point3D(-thickness, 0.4 - headLength / 2, thickness));
+                if (parts[0] == "v" && parts.Length >= 4)
+                {
+                    // Vertex: v x y z
+                    if (double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double x) &&
+                        double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double y) &&
+                        double.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out double z))
+                    {
+                        vertices.Add(new Point3D(x, y, z));
+                    }
+                }
+                else if (parts[0] == "f" && parts.Length >= 4)
+                {
+                    // Face: f v1 v2 v3 ... (assuming triangles, take first 3)
+                    var faceIndices = new List<int>();
+                    for (int i = 1; i < parts.Length && faceIndices.Count < 3; i++)
+                    {
+                        var vertexPart = parts[i].Split('/')[0]; // Ignore texture/normal indices
+                        if (int.TryParse(vertexPart, out int idx))
+                        {
+                            faceIndices.Add(idx - 1); // OBJ is 1-based
+                        }
+                    }
+                    if (faceIndices.Count == 3)
+                    {
+                        indices.AddRange(faceIndices);
+                    }
+                }
+            }
 
-            // Top rectangle
-            mesh.Positions.Add(new Point3D(-thickness, 0.4 + headLength / 2, -thickness));
-            mesh.Positions.Add(new Point3D(thickness, 0.4 + headLength / 2, -thickness));
-            mesh.Positions.Add(new Point3D(thickness, 0.4 + headLength / 2, thickness));
-            mesh.Positions.Add(new Point3D(-thickness, 0.4 + headLength / 2, thickness));
-
-            // Define triangles for all faces
-            // Bottom face
-            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(1);
-            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(2);
-
-            // Top face
-            mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(5); mesh.TriangleIndices.Add(6);
-            mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(6); mesh.TriangleIndices.Add(7);
-
-            // Front face
-            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(5);
-            mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(5); mesh.TriangleIndices.Add(4);
-
-            // Back face
-            mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(7);
-            mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(7); mesh.TriangleIndices.Add(6);
-
-            // Left face
-            mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(0); mesh.TriangleIndices.Add(4);
-            mesh.TriangleIndices.Add(3); mesh.TriangleIndices.Add(4); mesh.TriangleIndices.Add(7);
-
-            // Right face
-            mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(2); mesh.TriangleIndices.Add(6);
-            mesh.TriangleIndices.Add(1); mesh.TriangleIndices.Add(6); mesh.TriangleIndices.Add(5);
-
-            headMesh.Positions = mesh.Positions;
-            headMesh.TriangleIndices = mesh.TriangleIndices;
+            mesh.Positions = new Point3DCollection(vertices);
+            mesh.TriangleIndices = new Int32Collection(indices);
+            return mesh;
         }
+
+
 
         private void LoadMotionData()
         {
@@ -214,6 +190,12 @@ namespace SpeedyBee.Pages
 
             // Update robot transform (shared by both body and head)
             _robotTransform.Children.Clear();
+
+            // Scale down the robot very much
+            _robotTransform.Children.Add(new ScaleTransform3D(0.01, 0.01, 0.01));
+
+            // Rotate the robot front 90 degrees to the left
+            _robotTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)));
 
             // Apply rotation transformations (in degrees)
             var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), frame.Rotation.X);
