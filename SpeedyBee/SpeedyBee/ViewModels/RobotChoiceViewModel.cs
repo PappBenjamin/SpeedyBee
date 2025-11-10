@@ -45,6 +45,20 @@ namespace SpeedyBee.ViewModels
             set => SetProperty(ref _kd, value);
         }
 
+        private double _baseSpeed = 50.0;
+        public double BaseSpeed
+        {
+            get => _baseSpeed;
+            set => SetProperty(ref _baseSpeed, value);
+        }
+
+        private double _maxTurnSpeed = 100.0;
+        public double MaxTurnSpeed
+        {
+            get => _maxTurnSpeed;
+            set => SetProperty(ref _maxTurnSpeed, value);
+        }
+
         public bool IsPidConfigVisible => !string.IsNullOrEmpty(SelectedRobot);
 
         private ManagementEventWatcher? _portWatcher;
@@ -74,9 +88,9 @@ namespace SpeedyBee.ViewModels
                 using var serialPort = new SerialPort(SelectedPort, 115200);
                 serialPort.Open();
                 
-                // Send PID parameters to the robot
-                // Format: "PID,Kp,Kd\n"
-                string command = $"PID,{Kp:F6},{Kd:F6}\n";
+                // Send parameters to the robot
+                // Format: "PID,Kp,Kd,BaseSpeed,MaxTurnSpeed\n"
+                string command = $"PID,{Kp:F6},{Kd:F6},{BaseSpeed:F6},{MaxTurnSpeed:F6}\n";
                 serialPort.Write(command);
                 
                 serialPort.Close();
