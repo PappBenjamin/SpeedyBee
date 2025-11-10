@@ -24,8 +24,10 @@ MenuState currentMenuState = MAIN_MENU;
 // first speed
 
 // PID Constants        speed correction
-double Kp = 1.525; /*       1.525          Increase Proportional control slightly for better response */
-double Kd = 0.001; /*       0.0015 -> 0.0019        Increase Derivative for stability in curves */
+double Kp = 1.525;          /*       1.525          Increase Proportional control slightly for better response */
+double Kd = 0.001;          /*       0.0015 -> 0.0019        Increase Derivative for stability in curves */
+double BaseSpeed = 80.0;    // Base speed of the motors
+double MaxTurnSpeed = 90.0; // Maximum speed adjustment for turning
 
 int currentError = 0;     // Current position error
 double filteredError = 0; // Use for low-pass filtering error
@@ -36,6 +38,8 @@ void forward(int speedA, int speedB);
 void settingPinsModes();
 
 void readSensorDataAndControl();
+
+void readSerialDataAndControl();
 
 void setup()
 {
@@ -98,10 +102,46 @@ void loop()
 
   // readSensorDataAndControl();
 
+  readSerialDataAndControl();
+
   imu.read();
   imu.printData();
 
+  display.clearDisplay();
+  display.setTextSize(2.5);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 29.5);
+  display.println("Kp: " + String(Kp));
+  display.println("Kd: " + String(Kd));
+  display.println("BaseSpeed: " + String(BaseSpeed));
+  display.println("MaxTurn: " + String(MaxTurnSpeed));
+  display.display();
+
   delay(10); // Delay for readability
+}
+
+void readSerialDataAndControl()
+{
+  if (Serial.available() > 0)
+  {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+
+    // simple 2 values separated by comma
+    int commaIndex = input.indexOf(',');
+    if (commaIndex != -1)
+    {
+      String firstValue = input.substring(0, commaIndex);
+      String secondValue = input.substring(commaIndex + 1);
+      String thirdValue = input.substring(commaIndex + 1);
+      String fourthValue = input.substring(commaIndex + 1);
+
+      Kp = firstValue.toDouble();
+      Kd = secondValue.toDouble();
+      BaseSpeed = thirdValue.toDouble();
+      MaxTurnSpeed = fourthValue.toDouble();
+    }
+  }
 }
 
 void readSensorDataAndControl()
@@ -134,13 +174,9 @@ void readSensorDataAndControl()
   // --- PD control calculation ---
   double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
 
-  // --- Base speeds ---
-  int baseSpeed = 80;    // Normal forward speed
-  int maxTurnSpeed = 90; // Max extra speed added/subtracted for turning
-
   // --- Apply correction symmetrically ---
-  int leftSpeed = baseSpeed - (int)(speedCorrection * maxTurnSpeed);
-  int rightSpeed = baseSpeed + (int)(speedCorrection * maxTurnSpeed);
+  int leftSpeed = BaseSpeed - (int)(speedCorrection * MaxTurnSpeed);
+  int rightSpeed = BaseSpeed + (int)(speedCorrection * MaxTurnSpeed);
 
   // --- Limit motor speed ---
   leftSpeed = constrain(leftSpeed, -200, 200);
