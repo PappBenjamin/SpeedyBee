@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Management;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace SpeedyBee.ViewModels
@@ -21,17 +22,69 @@ namespace SpeedyBee.ViewModels
         public string? SelectedRobot
         {
             get => _selectedRobot;
-            set => SetProperty(ref _selectedRobot, value);
+            set
+            {
+                if (SetProperty(ref _selectedRobot, value))
+                {
+                    OnPropertyChanged(nameof(IsPidConfigVisible));
+                }
+            }
         }
+
+        private double _kp = 1.0;
+        public double Kp
+        {
+            get => _kp;
+            set => SetProperty(ref _kp, value);
+        }
+
+        private double _kd = 0.0;
+        public double Kd
+        {
+            get => _kd;
+            set => SetProperty(ref _kd, value);
+        }
+
+        public bool IsPidConfigVisible => !string.IsNullOrEmpty(SelectedRobot);
 
         private ManagementEventWatcher? _portWatcher;
         private readonly Dispatcher _dispatcher;
 
+        public ICommand UpdatePidParametersCommand { get; }
+
         public RobotChoiceViewModel()
         {
             _dispatcher = Dispatcher.CurrentDispatcher;
+            UpdatePidParametersCommand = new RelayCommand(UpdatePidParameters, CanUpdatePidParameters);
             RefreshPorts();
             StartWatchingPorts();
+        }
+
+        private bool CanUpdatePidParameters()
+        {
+            return !string.IsNullOrEmpty(SelectedPort) && !string.IsNullOrEmpty(SelectedRobot);
+        }
+
+        private void UpdatePidParameters()
+        {
+            if (string.IsNullOrEmpty(SelectedPort)) return;
+
+            try
+            {
+                using var serialPort = new SerialPort(SelectedPort, 115200);
+                serialPort.Open();
+                
+                // Send PID parameters to the robot
+                // Format: "PID,Kp,Kd\n"
+                string command = $"PID,{Kp:F6},{Kd:F6}\n";
+                serialPort.Write(command);
+                
+                serialPort.Close();
+            }
+            catch (Exception)
+            {
+                // Handle communication errors
+            }
         }
 
         private void RefreshPorts()
@@ -82,5 +135,27 @@ namespace SpeedyBee.ViewModels
                 _portWatcher = null;
             }
         }
+    }
+
+    public class RelayCommand : ICommand
+    {
+        private readonly Action _execute;
+        private readonly Func<bool>? _canExecute;
+
+        public RelayCommand(Action execute, Func<bool>? canExecute = null)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
+        }
+
+        public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
+
+        public void Execute(object? parameter) => _execute();
     }
 }
