@@ -1,9 +1,8 @@
 import redis
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from serial_reader import read_serial_line, read_and_parse_imu
-from db_pusher import read_serial_and_push_to_db
-
+from serial_reader import read_and_parse_imu
+from redisAndPg import read_serial_to_redis, read_redis_to_postgres
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_KEY = 'imu_data'
@@ -11,67 +10,57 @@ REDIS_KEY = 'imu_data'
 app = FastAPI()
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
-@app.post("/push")
-def push_to_redis():
-    """Push raw serial data to Redis key (legacy endpoint)"""
-    data = read_serial_line()
-    if data:
-        r.set(REDIS_KEY, data)
-        return {"status": "ok", "data": data}
-    else:
-        return JSONResponse(content={"status": "no data"}, status_code=404)
 
-@app.post("/push-to-db")
-def push_to_database():
-    """Read serial data and push to database queue for processing"""
-    result = read_serial_and_push_to_db()
+@app.post("/serial-to-redis")
+def serial_to_redis():
+    """Read from serial and push to Redis queue"""
+    result = read_serial_to_redis()
 
     if result["status"] == "ok":
         return result
     else:
+        return JSONResponse(content=result, status_code=500)
+
+
+@app.post("/redis-to-postgres")
+def redis_to_postgres():
+    """Read from Redis queue and push to PostgreSQL"""
+    result = read_redis_to_postgres()
+
+    if result["status"] == "ok":
+        return result
+    elif result["status"] == "no_data":
         return JSONResponse(content=result, status_code=404)
-
-@app.post("/push-parsed")
-def push_parsed_to_redis():
-    """Read and parse serial data, then push to Redis key"""
-    imu_data = read_and_parse_imu()
-    if imu_data:
-        r.set(REDIS_KEY, str(imu_data))
-        return {"status": "ok", "data": imu_data}
     else:
-        return JSONResponse(content={"status": "no data"}, status_code=404)
+        return JSONResponse(content=result, status_code=500)
 
 
-@app.post("/push-dummy")
-def push_dummy_to_redis():
-    """Push dummy IMU data to Redis key"""
-    from generate_dummy_data import create_dummy_imu_data
+@app.get("/get-from-postgres")
+def get_from_postgres(limit: int = 100):
+    """Read IMU data from PostgreSQL database and return via HTTP"""
+    result = read_postgres(limit=limit)
 
-    imu_data = create_dummy_imu_data()
-    r.set(REDIS_KEY, str(imu_data))
-    return {"status": "ok", "data": imu_data}
-
-
-@app.post("/push-dummy-to-db")
-def push_dummy_to_database():
-    """Generate dummy IMU data and push directly to database"""
-    from generate_dummy_data import create_dummy_imu_data
-    from db_pusher import push_imu_to_database
-
-    imu_data = create_dummy_imu_data()
-    success = push_imu_to_database(imu_data)
-
-    if success:
-        return {"status": "ok", "message": "Dummy data saved to database", "data": imu_data}
+    if result["status"] == "ok":
+        return result
     else:
-        return JSONResponse(content={"status": "error", "message": "Failed to save to database", "data": imu_data}, status_code=500)
+        return JSONResponse(content=result, status_code=500)
 
 
-@app.get("/get")
-def get_from_redis():
+@app.get("/get-from-serial-to-redis")
+def get_from_serial_to_redis():
     """Get data from Redis key"""
     data = r.get(REDIS_KEY)
     if data:
         return {"data": data.decode('utf-8')}
+    else:
+        return JSONResponse(content={"status": "no data"}, status_code=404)
+
+
+@app.get("/get-from-serial")
+def get_from_serial():
+    """Read and parse IMU data from serial"""
+    imu_data = read_and_parse_imu()
+    if imu_data:
+        return {"data": imu_data}
     else:
         return JSONResponse(content={"status": "no data"}, status_code=404)
