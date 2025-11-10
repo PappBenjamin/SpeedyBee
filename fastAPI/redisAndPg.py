@@ -142,8 +142,6 @@ def read_postgres(limit=100):
             "data": []
         }
 
-
-
 # Read from serial and push to Redis
 def read_serial_to_redis():
     """

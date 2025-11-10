@@ -2,7 +2,7 @@ import redis
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from serial_reader import read_and_parse_imu
-from redisAndPg import read_serial_to_redis, read_redis_to_postgres
+from redisAndPg import read_postgres, read_serial_to_redis, read_redis_to_postgres
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_KEY = 'imu_data'
