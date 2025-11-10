@@ -60,14 +60,14 @@ def push_imu_to_database(imu_data):
         accel_x = float(imu_data['accel_x'])
         accel_y = float(imu_data['accel_y'])
         accel_z = float(imu_data['accel_z'])
-        rot_x = float(imu_data['rot_x'])
-        rot_y = float(imu_data['rot_y'])
-        rot_z = float(imu_data['rot_z'])
+        gyro_x = float(imu_data['gyro_x'])
+        gyro_y = float(imu_data['gyro_y'])
+        gyro_z = float(imu_data['gyro_z'])
 
         # Insert data into PostgreSQL
         cursor.execute(
-            "INSERT INTO imu_data (timestamp, accel_x, accel_y, accel_z, rot_x, rot_y, rot_z) VALUES (%s,%s,%s,%s,%s,%s,%s)",
-            (timestamp, accel_x, accel_y, accel_z, rot_x, rot_y, rot_z)
+            "INSERT INTO imu_data (timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+            (timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z)
         )
         conn.commit()
 
@@ -106,7 +106,7 @@ def read_postgres(limit=100):
 
         # Fetch data
         cursor.execute(
-            "SELECT timestamp, accel_x, accel_y, accel_z, rot_x, rot_y, rot_z FROM imu_data ORDER BY timestamp DESC LIMIT %s",
+            "SELECT timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z FROM imu_data ORDER BY timestamp DESC LIMIT %s",
             (limit,)
         )
         rows = cursor.fetchall()
@@ -119,9 +119,9 @@ def read_postgres(limit=100):
                 "accel_x": row[1],
                 "accel_y": row[2],
                 "accel_z": row[3],
-                "rot_x": row[4],
-                "rot_y": row[5],
-                "rot_z": row[6]
+                "gyro_x": row[4],
+                "gyro_y": row[5],
+                "gyro_z": row[6]
             })
 
         # Clean up
@@ -237,8 +237,3 @@ def read_redis_to_postgres():
             "message": str(e),
             "processed": 0
         }
-
-
-
-
-
