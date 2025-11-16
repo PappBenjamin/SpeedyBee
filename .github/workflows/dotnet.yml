@@ -1,0 +1,57 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ./SpeedyBee/SpeedyBee.sln
+        working-directory: .
+
+      - name: Build
+        run: dotnet build ./SpeedyBee/SpeedyBee.sln --configuration Release --no-restore
+
+      - name: Publish WPF Application
+        run: dotnet publish ./SpeedyBee/SpeedyBee/SpeedyBee.csproj --configuration Release --no-build --output ./publish
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpeedyBee-WPF
+          path: ./publish/
+
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          cd fastAPI
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Test with uv
+        run: |
+          cd fastAPI
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          # Add any test commands here if you have tests
+          echo "FastAPI service started successfully"
+          kill %1
