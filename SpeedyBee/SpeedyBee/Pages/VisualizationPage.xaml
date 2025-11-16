@@ -7,6 +7,7 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -16,7 +17,16 @@
                    FontWeight="Bold"
                    Margin="0,0,0,20"/>
 
-        <Border Grid.Row="1" 
+        <GroupBox Grid.Row="1" Header="Data Source" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                <RadioButton x:Name="rbRedis" Content="Redis (Real-time)" GroupName="DataSource" Margin="0,0,20,0" Checked="DataSource_Checked"/>
+                <RadioButton x:Name="rbCsv" Content="CSV File" GroupName="DataSource" Margin="0,0,20,0" Checked="DataSource_Checked"/>
+                <Button x:Name="btnSelectCsv" Content="Browse..." IsEnabled="{Binding ElementName=rbCsv, Path=IsChecked}" Click="btnSelectCsv_Click" Padding="10,5"/>
+                <Label x:Name="lblSelectedFile" Content="" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+        </GroupBox>
+
+        <Border Grid.Row="2"
                 Background="#1A1A1A"
                 BorderBrush="Gray"
                 BorderThickness="1"
@@ -161,8 +171,8 @@
             </Viewport3D>
         </Border>
 
-        <StackPanel Grid.Row="2" 
-                    Orientation="Horizontal" 
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     Margin="0,20,0,0">
             <Button x:Name="btnStart" 
