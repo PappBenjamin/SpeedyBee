@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SERIAL_PORT = '/dev/cu.usbmodem2101'  # Update as needed
+SERIAL_PORT = 'COM7'  # Update as needed
 BAUD_RATE = 115200
 
 
@@ -47,7 +47,7 @@ def parse_imu_data(raw_data):
 
     try:
         parts = raw_data.split(',')
-        if len(parts) != 7:
+        if len(parts) < 6:
             logger.error(f"Unexpected data format: {raw_data}")
             return None
 
@@ -59,7 +59,7 @@ def parse_imu_data(raw_data):
             "gyro_x": float(parts[3]),
             "gyro_y": float(parts[4]),
             "gyro_z": float(parts[5]),
-            "temperature": float(parts[6])
+            "temperature": float(parts[6]) if len(parts) > 6 else 0.0
         }
         logger.info(f"Parsed IMU data: {imu_data}")
         return imu_data
@@ -78,4 +78,3 @@ def read_and_parse_imu(port=SERIAL_PORT, baud_rate=BAUD_RATE):
 
     raw_data = read_serial_line(port, baud_rate)
     return parse_imu_data(raw_data)
-

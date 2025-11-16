@@ -2,26 +2,34 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using OpenTK.Mathematics;
+using StackExchange.Redis;
 
 namespace SpeedyBee.Pages
 {
     public partial class VisualizationPage : Page
     {
-        private List<MotionFrame> _frames = new();
-        private int _currentFrame = 0;
-        private DispatcherTimer _timer;
+        private ConnectionMultiplexer _redisConnection;
+        private IDatabase _redis;
+        private CancellationTokenSource? _pollingCancellation;
+        private List<MotionFrame> _frames = new(); // Kept for future optional choice implementation
         private Transform3DGroup _robotTransform;
-        private bool _isPlaying = false;
+        private bool _isPolling = false;
+        private Point3D _modelCenter;
+        private const string RedisQueue = "imu_queue";
 
         public VisualizationPage()
         {
             InitializeComponent();
+            _redisConnection = ConnectionMultiplexer.Connect("localhost:6379");
+            _redis = _redisConnection.GetDatabase();
             InitializeVisualization();
             LoadMotionData();
         }
@@ -34,21 +42,36 @@ namespace SpeedyBee.Pages
             // Initialize transform group (shared by the robot model)
             _robotTransform = new Transform3DGroup();
 
-            // Scale down the robot very much
-            _robotTransform.Children.Add(new ScaleTransform3D(0.01, 0.01, 0.01));
-
-            // Rotate the robot front 90 degrees to the left
-            _robotTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)));
+            // Apply initial transform
+            ApplyBaseTransform();
 
             bodyModel.Transform = _robotTransform;
             headModel.Transform = _robotTransform;
+        }
 
-            // Initialize timer for animation
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(50) // 20 FPS
-            };
-            _timer.Tick += Timer_Tick;
+        private void ApplyBaseTransform()
+        {
+            _robotTransform.Children.Clear();
+
+            // Step 1: Translate to origin (center the model at 0,0,0)
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                -_modelCenter.X,
+                -_modelCenter.Y,
+                -_modelCenter.Z
+            ));
+
+            // Step 2: Rotate to lay flat (rotate -90 degrees around X axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
+            ));
+
+            // Step 3: Rotate to face forward (rotate -90 degrees around Z axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+            ));
+
+            // Step 4: Scale down the robot
+            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
         }
 
         private void LoadRobotModel()
@@ -67,6 +90,9 @@ namespace SpeedyBee.Pages
                 bodyMesh.Positions = mesh.Positions;
                 bodyMesh.TriangleIndices = mesh.TriangleIndices;
 
+                // Calculate the center of the model
+                _modelCenter = CalculateModelCenter(mesh.Positions);
+
                 // Clear head mesh since we're using a single model
                 headMesh.Positions.Clear();
                 headMesh.TriangleIndices.Clear();
@@ -75,6 +101,26 @@ namespace SpeedyBee.Pages
             {
                 MessageBox.Show($"Error loading robot model: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private Point3D CalculateModelCenter(Point3DCollection positions)
+        {
+            if (positions.Count == 0)
+                return new Point3D(0, 0, 0);
+
+            double sumX = 0, sumY = 0, sumZ = 0;
+            foreach (var point in positions)
+            {
+                sumX += point.X;
+                sumY += point.Y;
+                sumZ += point.Z;
+            }
+
+            return new Point3D(
+                sumX / positions.Count,
+                sumY / positions.Count,
+                sumZ / positions.Count
+            );
         }
 
         private MeshGeometry3D LoadObjMesh(string filePath)
@@ -121,8 +167,6 @@ namespace SpeedyBee.Pages
             mesh.TriangleIndices = new Int32Collection(indices);
             return mesh;
         }
-
-
 
         private void LoadMotionData()
         {
@@ -174,47 +218,92 @@ namespace SpeedyBee.Pages
             }
         }
 
-        private void Timer_Tick(object? sender, EventArgs e)
+        private async Task StartPolling(CancellationToken token)
         {
-            if (_frames.Count == 0) return;
-
-            _currentFrame = (_currentFrame + 1) % _frames.Count;
-            UpdateStickTransform();
+            while (!token.IsCancellationRequested)
+            {
+                await FetchAndUpdateImuData(token);
+                await Task.Delay(TimeSpan.FromMilliseconds(50), token); // Poll every 50ms for real-time updates
+            }
         }
 
-        private void UpdateStickTransform()
+        private async Task FetchAndUpdateImuData(CancellationToken token)
         {
-            if (_frames.Count == 0 || _currentFrame >= _frames.Count) return;
+            try
+            {
+                var json = await _redis.ListRightPopAsync(RedisQueue);
+                if (!string.IsNullOrEmpty(json))
+                {
+                    var imuData = JsonSerializer.Deserialize<ImuData>(json);
+                    if (imuData != null)
+                    {
+                        Dispatcher.Invoke(() => UpdateImuTransform(imuData));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle error silently, as polling continues
+            }
+        }
 
-            var frame = _frames[_currentFrame];
+        private void UpdateImuTransform(ImuData data)
+        {
+            // Normalize acceleration to small floats like in CSV (-32768 + offset)
+            Vector3 acceleration = new Vector3(
+                (data.accel_x - 32768) / 10000f,
+                (data.accel_y - 32768) / 10000f,
+                (data.accel_z - 32768) / 10000f
+            );
+
+            // Convert gyro to degrees, assuming raw 0-65535
+            Vector3 rotation = new Vector3(
+                data.gyro_x / 65535f * 360f,
+                data.gyro_y / 65535f * 360f,
+                data.gyro_z / 65535f * 360f
+            );
 
             // Update robot transform (shared by both body and head)
             _robotTransform.Children.Clear();
 
-            // Scale down the robot very much
-            _robotTransform.Children.Add(new ScaleTransform3D(0.01, 0.01, 0.01));
+            // Step 1: Translate to origin (center the model at 0,0,0)
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                -_modelCenter.X,
+                -_modelCenter.Y,
+                -_modelCenter.Z
+            ));
 
-            // Rotate the robot front 90 degrees to the left
-            _robotTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)));
-
-            // Apply rotation transformations (in degrees)
-            var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), frame.Rotation.X);
-            var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), frame.Rotation.Y);
-            var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), frame.Rotation.Z);
+            // Step 2: Apply motion rotations (around the centered origin)
+            var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X);
+            var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y);
+            var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z);
 
             _robotTransform.Children.Add(new RotateTransform3D(rotateX));
             _robotTransform.Children.Add(new RotateTransform3D(rotateY));
             _robotTransform.Children.Add(new RotateTransform3D(rotateZ));
 
-            // Apply translation (acceleration data + base offset to sit on ground)
+            // Step 3: Rotate to lay flat (rotate -90 degrees around X axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
+            ));
+
+            // Step 4: Rotate to face forward (rotate -90 degrees around Z axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+            ));
+
+            // Step 5: Scale down the robot
+            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
+
+            // Step 6: Apply translation (acceleration data + base offset to sit on ground)
             _robotTransform.Children.Add(new TranslateTransform3D(
-                frame.Acceleration.X,
-                frame.Acceleration.Y + 0.4, // Offset to make robot sit on ground
-                frame.Acceleration.Z
+                acceleration.X,
+                acceleration.Y + 0.4, // Offset to make robot sit on ground
+                acceleration.Z
             ));
 
             // Update camera to follow the robot
-            UpdateCameraPosition(frame.Acceleration);
+            UpdateCameraPosition(acceleration);
         }
 
         private void UpdateCameraPosition(Vector3 stickPosition)
@@ -240,40 +329,36 @@ namespace SpeedyBee.Pages
             camera.LookDirection = lookDirection;
         }
 
-        private void BtnStart_Click(object sender, RoutedEventArgs e)
+        private async void BtnStart_Click(object sender, RoutedEventArgs e)
         {
-            if (_frames.Count == 0)
-            {
-                MessageBox.Show("No motion data loaded!", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            if (_isPolling) return;
 
-            _isPlaying = true;
-            _timer.Start();
+            _isPolling = true;
+            _pollingCancellation = new CancellationTokenSource();
+            _ = StartPolling(_pollingCancellation.Token);
             btnStart.IsEnabled = false;
             btnPause.IsEnabled = true;
         }
 
-        private void BtnPause_Click(object sender, RoutedEventArgs e)
+        private async void BtnPause_Click(object sender, RoutedEventArgs e)
         {
-            _isPlaying = false;
-            _timer.Stop();
+            _isPolling = false;
+            _pollingCancellation?.Cancel();
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
         }
 
-        private void BtnReset_Click(object sender, RoutedEventArgs e)
+        private async void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            _timer.Stop();
-            _currentFrame = 0;
-            _isPlaying = false;
+            _pollingCancellation?.Cancel();
+            _isPolling = false;
 
-            // Reset robot transform
-            _robotTransform.Children.Clear();
+            // Reset robot transform to initial state
+            ApplyBaseTransform();
 
             // Reset camera to initial position
-            camera.Position = new Point3D(0, 0, 5);
-            camera.LookDirection = new Vector3D(0, 0, -1);
+            camera.Position = new Point3D(0, 2.4, 5);
+            camera.LookDirection = new Vector3D(0, -0.4, -1);
 
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
@@ -283,6 +368,18 @@ namespace SpeedyBee.Pages
         {
             public Vector3 Acceleration { get; set; }
             public Vector3 Rotation { get; set; }
+        }
+
+        private class ImuData
+        {
+            public string? timestamp { get; set; }
+            public float accel_x { get; set; }
+            public float accel_y { get; set; }
+            public float accel_z { get; set; }
+            public float gyro_x { get; set; }
+            public float gyro_y { get; set; }
+            public float gyro_z { get; set; }
+            public float temperature { get; set; }
         }
     }
 }
