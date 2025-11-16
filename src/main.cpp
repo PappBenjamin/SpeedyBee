@@ -41,6 +41,8 @@ void readSensorDataAndControl();
 
 void readSerialDataAndControl();
 
+void showCurrentPIDValues();
+
 void setup()
 {
   Serial.begin(115200);
@@ -107,19 +109,23 @@ void loop()
   imu.read();
   imu.printData();
 
+  showCurrentPIDValues();
+
+  delay(10); // Delay for readability
+}
+
+void showCurrentPIDValues()
+{
   display.clearDisplay();
-  display.setTextSize(2.5);
+  display.setTextSize(1.5);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 29.5);
+  display.setCursor(0, 2);
   display.println("Kp: " + String(Kp));
   display.println("Kd: " + String(Kd));
   display.println("BaseSpeed: " + String(BaseSpeed));
   display.println("MaxTurn: " + String(MaxTurnSpeed));
   display.display();
-
-  delay(10); // Delay for readability
 }
-
 void readSerialDataAndControl()
 {
   if (Serial.available() > 0)
