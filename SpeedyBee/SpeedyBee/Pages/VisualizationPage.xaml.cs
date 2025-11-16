@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
@@ -32,6 +33,10 @@ namespace SpeedyBee.Pages
         private DispatcherTimer _playbackTimer;
         private int _currentFrameIndex = 0;
         private bool _isServerRunning = false;
+        private double _cameraPitch = -0.1; // Starting pitch for looking slightly down
+        private double _cameraYaw = 0;
+        private double _cameraRoll = 0;
+        private const double CameraRotationSpeed = 0.05;
 
         public VisualizationPage()
         {
@@ -58,6 +63,9 @@ namespace SpeedyBee.Pages
 
             bodyModel.Transform = _robotTransform;
             headModel.Transform = _robotTransform;
+
+            // Set initial camera orientation
+            UpdateCameraDirection();
         }
 
         private void ApplyBaseTransform()
@@ -412,6 +420,76 @@ namespace SpeedyBee.Pages
             }
         }
 
+        private void UpdateCameraDirection()
+        {
+            // Compute forward direction from yaw and pitch
+            Vector3D forward = new Vector3D(
+                Math.Cos(_cameraYaw) * Math.Cos(_cameraPitch),
+                Math.Sin(_cameraPitch),
+                Math.Sin(_cameraYaw) * Math.Cos(_cameraPitch)
+            );
+
+            // Compute right vector
+            Vector3D right = Vector3D.CrossProduct(forward, new Vector3D(0, 1, 0));
+
+            // Compute up direction with roll
+            Vector3D up = new Vector3D(0, 1, 0);
+
+            // Apply roll rotation to up vector around forward axis
+            double cosRoll = Math.Cos(_cameraRoll);
+            double sinRoll = Math.Sin(_cameraRoll);
+            up = new Vector3D(
+                up.X * cosRoll + right.X * sinRoll,
+                up.Y * cosRoll + right.Y * sinRoll,
+                up.Z * cosRoll + right.Z * sinRoll
+            );
+
+            // Apply roll to right vector
+            right = Vector3D.CrossProduct(forward, up);
+
+            // Update camera
+            camera.LookDirection = forward;
+            camera.UpDirection = up;
+        }
+
+        private void VisualizationPage_KeyDown(object sender, KeyEventArgs e)
+        {
+            bool updated = false;
+
+            switch (e.Key)
+            {
+                case Key.W:
+                    _cameraPitch -= CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.S:
+                    _cameraPitch += CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.A:
+                    _cameraYaw -= CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.D:
+                    _cameraYaw += CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.Q:
+                    _cameraRoll -= CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.E:
+                    _cameraRoll += CameraRotationSpeed;
+                    updated = true;
+                    break;
+            }
+
+            if (updated)
+            {
+                UpdateCameraDirection();
+            }
+        }
+
         private void StartFastApiServer()
         {
             if (_isServerRunning) return;
@@ -515,9 +593,12 @@ namespace SpeedyBee.Pages
             // Reset robot transform to initial state
             ApplyBaseTransform();
 
-            // Reset camera to initial position
+            // Reset camera to initial position and orientation
             camera.Position = new Point3D(0, 2.4, 5);
-            camera.LookDirection = new Vector3D(0, -0.4, -1);
+            _cameraPitch = -0.1;
+            _cameraYaw = 0;
+            _cameraRoll = 0;
+            UpdateCameraDirection();
 
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
