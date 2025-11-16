@@ -82,6 +82,10 @@ namespace SpeedyBee.Pages
                 new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)
             ));
 
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
+            ));
+
             // Step 4: Scale down the robot
             _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
         }
@@ -277,11 +281,11 @@ namespace SpeedyBee.Pages
             _robotTransform.Children.Clear();
 
             // Step 1: Center the model
-            _robotTransform.Children.Add(new TranslateTransform3D(
-                -_modelCenter.X,
-                -_modelCenter.Y,
-                -_modelCenter.Z
-            ));
+            // _robotTransform.Children.Add(new TranslateTransform3D(
+            //     -_modelCenter.X,
+            //     -_modelCenter.Y,
+            //     -_modelCenter.Z
+            // ));
 
             // Step 2: Apply motion rotations (small rotations from neutral)
             _robotTransform.Children.Add(new RotateTransform3D(
