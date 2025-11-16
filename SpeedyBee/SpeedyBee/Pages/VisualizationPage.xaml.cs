@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using OpenTK.Mathematics;
 using StackExchange.Redis;
 
@@ -19,19 +22,33 @@ namespace SpeedyBee.Pages
         private ConnectionMultiplexer _redisConnection;
         private IDatabase _redis;
         private CancellationTokenSource? _pollingCancellation;
-        private List<MotionFrame> _frames = new(); // Kept for future optional choice implementation
+        private List<MotionFrame> _frames = new();
         private Transform3DGroup _robotTransform;
         private bool _isPolling = false;
         private Point3D _modelCenter;
         private const string RedisQueue = "imu_queue";
+        private enum DataSource { Redis, Csv }
+        private DataSource _dataSource = DataSource.Redis;
+        private string _selectedCsvPath = string.Empty;
+        private DispatcherTimer _playbackTimer;
+        private int _currentFrameIndex = 0;
+        private bool _isServerRunning = false;
+        private double _cameraPitch = -0.1; // Starting pitch for looking slightly down
+        private double _cameraYaw = 0;
+        private double _cameraRoll = 0;
+        private const double CameraRotationSpeed = 0.05;
+        private const double CameraMovementSpeed = 0.2;
 
         public VisualizationPage()
         {
             InitializeComponent();
+            rbRedis.IsChecked = true; // Set default source after XAML initialization
             _redisConnection = ConnectionMultiplexer.Connect("localhost:6379");
             _redis = _redisConnection.GetDatabase();
             InitializeVisualization();
-            LoadMotionData();
+            _playbackTimer = new DispatcherTimer();
+            _playbackTimer.Interval = TimeSpan.FromMilliseconds(50);
+            _playbackTimer.Tick += PlaybackTimer_Tick;
         }
 
         private void InitializeVisualization()
@@ -47,6 +64,9 @@ namespace SpeedyBee.Pages
 
             bodyModel.Transform = _robotTransform;
             headModel.Transform = _robotTransform;
+
+            // Set initial camera orientation
+            UpdateCameraDirection();
         }
 
         private void ApplyBaseTransform()
@@ -168,12 +188,13 @@ namespace SpeedyBee.Pages
             return mesh;
         }
 
-        private void LoadMotionData()
+        private void LoadMotionData(string csvPath)
         {
             try
             {
-                string csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "motion.csv");
-                
+                _frames.Clear();
+                _currentFrameIndex = 0;
+
                 if (!File.Exists(csvPath))
                 {
                     MessageBox.Show($"Motion data file not found at: {csvPath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -210,7 +231,7 @@ namespace SpeedyBee.Pages
                     }
                 }
 
-                MessageBox.Show($"Loaded {_frames.Count} motion frames", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Loaded {_frames.Count} motion frames from {Path.GetFileName(csvPath)}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -302,63 +323,291 @@ namespace SpeedyBee.Pages
                 acceleration.Z
             ));
 
-            // Update camera to follow the robot
-            UpdateCameraPosition(acceleration);
+
         }
 
-        private void UpdateCameraPosition(Vector3 stickPosition)
+
+        private void DataSource_Checked(object sender, RoutedEventArgs e)
         {
-            // Camera follows the stick at a fixed distance
-            double cameraDistance = 5.0; // Distance from camera to stick
-            double cameraHeight = 2.0;   // Height offset for better viewing angle
+            if (sender == rbRedis)
+            {
+                _dataSource = DataSource.Redis;
+                if (lblSelectedFile != null)
+                {
+                    lblSelectedFile.Content = string.Empty;
+                }
+                _frames.Clear();
+            }
+            else if (sender == rbCsv)
+            {
+                _dataSource = DataSource.Csv;
+            }
+        }
 
-            // Position camera behind and above the stick (accounting for ground offset)
-            camera.Position = new Point3D(
-                stickPosition.X,
-                stickPosition.Y + cameraHeight + 0.4, // Account for robot sitting on ground
-                stickPosition.Z + cameraDistance
+        private void btnSelectCsv_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                Filter = "CSV files (*.csv)|*.csv",
+                Title = "Select Motion Data CSV"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                _selectedCsvPath = dialog.FileName;
+                lblSelectedFile.Content = Path.GetFileName(dialog.FileName);
+                LoadMotionData(_selectedCsvPath);
+            }
+        }
+
+        private void UpdateFrameTransform(Vector3 acceleration, Vector3 rotation)
+        {
+            // Update robot transform for CSV frames
+            _robotTransform.Children.Clear();
+
+            // Step 1: Translate to origin (center the model at 0,0,0)
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                -_modelCenter.X,
+                -_modelCenter.Y,
+                -_modelCenter.Z
+            ));
+
+            // Step 2: Apply motion rotations (around the centered origin)
+            var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X);
+            var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y);
+            var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z);
+
+            _robotTransform.Children.Add(new RotateTransform3D(rotateX));
+            _robotTransform.Children.Add(new RotateTransform3D(rotateY));
+            _robotTransform.Children.Add(new RotateTransform3D(rotateZ));
+
+            // Step 3: Rotate to lay flat (rotate -90 degrees around X axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
+            ));
+
+            // Step 4: Rotate to face forward (rotate -90 degrees around Z axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+            ));
+
+            // Step 5: Scale down the robot
+            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
+
+            // Step 6: Apply translation (acceleration data + base offset to sit on ground)
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                acceleration.X,
+                acceleration.Y + 0.4, // Offset to make robot sit on ground
+                acceleration.Z
+            ));
+
+
+        }
+
+        private void PlaybackTimer_Tick(object sender, EventArgs e)
+        {
+            if (_currentFrameIndex < _frames.Count)
+            {
+                var frame = _frames[_currentFrameIndex];
+                UpdateFrameTransform(frame.Acceleration, frame.Rotation);
+                _currentFrameIndex++;
+            }
+            else
+            {
+                _playbackTimer.Stop();
+                btnStart.IsEnabled = true;
+                btnPause.IsEnabled = false;
+                MessageBox.Show("Playback finished.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void UpdateCameraDirection()
+        {
+            // Compute forward direction from yaw and pitch
+            Vector3D forward = new Vector3D(
+                Math.Cos(_cameraYaw) * Math.Cos(_cameraPitch),
+                Math.Sin(_cameraPitch),
+                Math.Sin(_cameraYaw) * Math.Cos(_cameraPitch)
             );
 
-            // Look at the stick's current position (accounting for ground offset)
-            Vector3D lookDirection = new Vector3D(
-                stickPosition.X - camera.Position.X,
-                (stickPosition.Y + 0.4) - camera.Position.Y, // Look at robot on ground
-                stickPosition.Z - camera.Position.Z
+            // Compute right vector
+            Vector3D right = Vector3D.CrossProduct(forward, new Vector3D(0, 1, 0));
+
+            // Compute up direction with roll
+            Vector3D up = new Vector3D(0, 1, 0);
+
+            // Apply roll rotation to up vector around forward axis
+            double cosRoll = Math.Cos(_cameraRoll);
+            double sinRoll = Math.Sin(_cameraRoll);
+            up = new Vector3D(
+                up.X * cosRoll + right.X * sinRoll,
+                up.Y * cosRoll + right.Y * sinRoll,
+                up.Z * cosRoll + right.Z * sinRoll
             );
 
-            camera.LookDirection = lookDirection;
+            // Apply roll to right vector
+            right = Vector3D.CrossProduct(forward, up);
+
+            // Update camera
+            camera.LookDirection = forward;
+            camera.UpDirection = up;
+        }
+
+        private void VisualizationPage_KeyDown(object sender, KeyEventArgs e)
+        {
+            bool updated = false;
+
+            switch (e.Key)
+            {
+                case Key.W:
+                    _cameraPitch -= CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.S:
+                    _cameraPitch += CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.A:
+                    _cameraYaw -= CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.D:
+                    _cameraYaw += CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.Q:
+                    _cameraRoll -= CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.E:
+                    _cameraRoll += CameraRotationSpeed;
+                    updated = true;
+                    break;
+                case Key.Z:
+                    camera.Position += camera.LookDirection * CameraMovementSpeed;
+                    updated = false; // No need to recompute direction, just position
+                    break;
+                case Key.X:
+                    camera.Position -= camera.LookDirection * CameraMovementSpeed;
+                    updated = false;
+                    break;
+            }
+
+            if (updated)
+            {
+                UpdateCameraDirection();
+            }
+        }
+
+        private void StartFastApiServer()
+        {
+            if (_isServerRunning) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c cd C:\\Users\\progenor\\code\\SpeedyBee\\fastAPI && uvicorn main:app --reload",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                });
+                _isServerRunning = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error starting FastAPI server: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void StopFastApiServer()
+        {
+            if (!_isServerRunning) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "taskkill.exe",
+                    Arguments = "/f /im python.exe",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                });
+                _isServerRunning = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error stopping FastAPI server: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void BtnStart_Click(object sender, RoutedEventArgs e)
         {
-            if (_isPolling) return;
+            if (_dataSource == DataSource.Redis)
+            {
+                if (_isPolling) return;
 
-            _isPolling = true;
-            _pollingCancellation = new CancellationTokenSource();
-            _ = StartPolling(_pollingCancellation.Token);
-            btnStart.IsEnabled = false;
-            btnPause.IsEnabled = true;
+                // Start the FastAPI server
+                StartFastApiServer();
+
+                // Start polling Redis
+                _isPolling = true;
+                _pollingCancellation = new CancellationTokenSource();
+                _ = StartPolling(_pollingCancellation.Token);
+                btnStart.IsEnabled = false;
+                btnPause.IsEnabled = true;
+            }
+            else if (_dataSource == DataSource.Csv)
+            {
+                if (_frames.Count == 0)
+                {
+                    MessageBox.Show("No motion frames loaded. Please select a CSV file first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                _currentFrameIndex = 0;
+                _playbackTimer.Start();
+                btnStart.IsEnabled = false;
+                btnPause.IsEnabled = true;
+            }
         }
 
         private async void BtnPause_Click(object sender, RoutedEventArgs e)
         {
-            _isPolling = false;
-            _pollingCancellation?.Cancel();
+            if (_dataSource == DataSource.Redis)
+            {
+                _isPolling = false;
+                _pollingCancellation?.Cancel();
+                StopFastApiServer();
+            }
+            else if (_dataSource == DataSource.Csv)
+            {
+                _playbackTimer.Stop();
+            }
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
         }
 
         private async void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            _pollingCancellation?.Cancel();
-            _isPolling = false;
+            if (_dataSource == DataSource.Redis)
+            {
+                _pollingCancellation?.Cancel();
+                _isPolling = false;
+                StopFastApiServer();
+            }
+            else if (_dataSource == DataSource.Csv)
+            {
+                _playbackTimer.Stop();
+                _currentFrameIndex = 0;
+            }
 
             // Reset robot transform to initial state
             ApplyBaseTransform();
 
-            // Reset camera to initial position
+            // Reset camera to initial position and orientation
             camera.Position = new Point3D(0, 2.4, 5);
-            camera.LookDirection = new Vector3D(0, -0.4, -1);
+            _cameraPitch = -0.1;
+            _cameraYaw = 0;
+            _cameraRoll = 0;
+            UpdateCameraDirection();
 
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
