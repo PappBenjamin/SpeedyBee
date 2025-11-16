@@ -25,6 +25,8 @@ namespace SpeedyBee.Pages
         private List<MotionFrame> _frames = new();
         private Transform3DGroup _robotTransform;
         private bool _isPolling = false;
+        private bool _isRecording = false;
+        private List<ImuData> _recordedData = new();
         private Point3D _modelCenter;
         private const string RedisQueue = "imu_queue";
         private enum DataSource { Redis, Csv }
@@ -255,6 +257,10 @@ namespace SpeedyBee.Pages
                 {
                     Dispatcher.Invoke(() => UpdateImuTransform(latestImuData));
                 }
+                if (_isRecording && latestImuData != null)
+                {
+                    _recordedData.Add(latestImuData);
+                }
             }
             catch (Exception ex)
             {
@@ -325,6 +331,9 @@ namespace SpeedyBee.Pages
             else if (sender == rbCsv)
             {
                 _dataSource = DataSource.Csv;
+                btnRecordStart.IsEnabled = false;
+                btnRecordStop.IsEnabled = false;
+                _isRecording = false;
             }
         }
 
@@ -517,6 +526,7 @@ namespace SpeedyBee.Pages
                 _ = StartPolling(_pollingCancellation.Token);
                 btnStart.IsEnabled = false;
                 btnPause.IsEnabled = true;
+                btnRecordStart.IsEnabled = true;
             }
             else if (_dataSource == DataSource.Csv)
             {
@@ -546,6 +556,9 @@ namespace SpeedyBee.Pages
             }
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
+            _isRecording = false;
+            btnRecordStart.IsEnabled = false;
+            btnRecordStop.IsEnabled = false;
         }
 
         private async void BtnReset_Click(object sender, RoutedEventArgs e)
@@ -571,6 +584,60 @@ namespace SpeedyBee.Pages
 
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
+            btnRecordStart.IsEnabled = false;
+            btnRecordStop.IsEnabled = false;
+            _isRecording = false;
+        }
+
+        private void BtnRecordStart_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isPolling)
+            {
+                MessageBox.Show("Please start real-time visualization first.", "Recording Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            _isRecording = true;
+            _recordedData.Clear();
+            btnRecordStart.IsEnabled = false;
+            btnRecordStop.IsEnabled = true;
+        }
+
+        private void BtnRecordStop_Click(object sender, RoutedEventArgs e)
+        {
+            _isRecording = false;
+            var dialog = new SaveFileDialog
+            {
+                DefaultExt = ".csv",
+                Filter = "CSV files (*.csv)|*.csv",
+                Title = "Save Recorded Motion Data",
+                InitialDirectory = AppDomain.CurrentDomain.BaseDirectory
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    using (var writer = new StreamWriter(dialog.FileName))
+                    {
+                        foreach (var data in _recordedData)
+                        {
+                            int ax = (int)Math.Round(data.accel_x);
+                            int ay = (int)Math.Round(data.accel_y);
+                            int az = (int)Math.Round(data.accel_z);
+                            int gx = (int)Math.Round(data.gyro_x);
+                            int gy = (int)Math.Round(data.gyro_y);
+                            int gz = (int)Math.Round(data.gyro_z);
+                            writer.WriteLine($"{ax},{ay},{az},{gx},{gy},{gz}");
+                        }
+                    }
+                    MessageBox.Show($"Recorded {_recordedData.Count} frames to {Path.GetFileName(dialog.FileName)}", "Recording Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving recording: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            btnRecordStart.IsEnabled = true;
+            btnRecordStop.IsEnabled = false;
         }
 
         private class MotionFrame
