@@ -23,7 +23,7 @@ jobs:
         working-directory: .
 
       - name: Build
-        run: dotnet build ./SpeedyBee/SpeedyBee.sln --no-restore
+        run: dotnet build ./SpeedyBee/SpeedyBee.sln --configuration Release --no-restore
 
       - name: Publish WPF Application
         run: dotnet publish ./SpeedyBee/SpeedyBee/SpeedyBee.csproj --configuration Release --no-build --output ./publish
