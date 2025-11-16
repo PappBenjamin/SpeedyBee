@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,23 +10,26 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using OpenTK.Mathematics;
+using StackExchange.Redis;
 
 namespace SpeedyBee.Pages
 {
     public partial class VisualizationPage : Page
     {
-        private HttpClient _httpClient;
+        private ConnectionMultiplexer _redisConnection;
+        private IDatabase _redis;
         private CancellationTokenSource? _pollingCancellation;
         private List<MotionFrame> _frames = new(); // Kept for future optional choice implementation
         private Transform3DGroup _robotTransform;
         private bool _isPolling = false;
         private Point3D _modelCenter;
-        private const string ApiBaseUrl = "http://localhost:8000";
+        private const string RedisQueue = "imu_queue";
 
         public VisualizationPage()
         {
             InitializeComponent();
-            _httpClient = new HttpClient();
+            _redisConnection = ConnectionMultiplexer.Connect("localhost:6379");
+            _redis = _redisConnection.GetDatabase();
             InitializeVisualization();
             LoadMotionData();
         }
@@ -230,15 +231,14 @@ namespace SpeedyBee.Pages
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{ApiBaseUrl}/get-from-serial", token);
-                response.EnsureSuccessStatusCode();
-
-                var json = await response.Content.ReadAsStringAsync(token);
-                var imuResponse = JsonSerializer.Deserialize<ImuResponse>(json);
-
-                if (imuResponse?.data != null)
+                var json = await _redis.ListRightPopAsync(RedisQueue);
+                if (!string.IsNullOrEmpty(json))
                 {
-                    Dispatcher.Invoke(() => UpdateImuTransform(imuResponse.data));
+                    var imuData = JsonSerializer.Deserialize<ImuData>(json);
+                    if (imuData != null)
+                    {
+                        Dispatcher.Invoke(() => UpdateImuTransform(imuData));
+                    }
                 }
             }
             catch (Exception ex)
@@ -368,11 +368,6 @@ namespace SpeedyBee.Pages
         {
             public Vector3 Acceleration { get; set; }
             public Vector3 Rotation { get; set; }
-        }
-
-        private class ImuResponse
-        {
-            public ImuData? data { get; set; }
         }
 
         private class ImuData
