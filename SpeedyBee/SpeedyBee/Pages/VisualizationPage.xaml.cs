@@ -236,14 +236,20 @@ namespace SpeedyBee.Pages
         {
             try
             {
+                ImuData latestImuData = null;
                 var json = await _redis.ListRightPopAsync(RedisQueue);
-                if (!string.IsNullOrEmpty(json))
+                while (!string.IsNullOrEmpty(json))
                 {
                     var imuData = JsonSerializer.Deserialize<ImuData>(json);
                     if (imuData != null)
                     {
-                        Dispatcher.Invoke(() => UpdateImuTransform(imuData));
+                        latestImuData = imuData;
                     }
+                    json = await _redis.ListRightPopAsync(RedisQueue);
+                }
+                if (latestImuData != null)
+                {
+                    Dispatcher.Invoke(() => UpdateImuTransform(latestImuData));
                 }
             }
             catch (Exception ex)
@@ -279,9 +285,9 @@ namespace SpeedyBee.Pages
 
             // Step 2: Apply motion rotations (small rotations from neutral)
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X)));
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.Y)));
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y)));
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), -rotation.X)));
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z)));
 
@@ -349,9 +355,9 @@ namespace SpeedyBee.Pages
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X)));
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y)));
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Z)));
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z)));
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Y)));
 
             // Step 3: Apply base orientation (robot facing forward along X-axis, laying flat)
             _robotTransform.Children.Add(new RotateTransform3D(
