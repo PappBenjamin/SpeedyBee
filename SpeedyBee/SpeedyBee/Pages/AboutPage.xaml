@@ -10,11 +10,70 @@
                    FontWeight="Bold"
                    Margin="0,0,0,20"/>
 
-        <TextBlock TextWrapping="Wrap" 
+        <TextBlock TextWrapping="Wrap"
                    Margin="0,0,0,20">
-            SpeedyBee is an advanced line follower robot project designed specifically for 
-            the RoboChallenge 2025 competition. The project combines cutting-edge sensor 
-            technology with sophisticated control algorithms to achieve precise line following capabilities.
+            <Run>SpeedyBee is an advanced line follower robot project designed specifically for</Run>
+            <Run FontWeight="Bold">the RoboChallenge 2025</Run>
+            <Run>competition. The project combines cutting-edge sensor technology with sophisticated control algorithms to achieve precise line following capabilities. It uses an IMU together with line sensors to follow a marked path, designed with low-cost components to demonstrate efficient motion control within a limited budget.</Run>
+        </TextBlock>
+
+        <TextBlock Text="Key Features"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,20,0,10"/>
+
+        <TextBlock TextWrapping="Wrap"
+                   Margin="0,0,0,20">
+            - Line following control using a PD algorithm
+            - Real-time IMU data visualization through a companion app
+            - Tuned for stable and accurate movement during competition
+        </TextBlock>
+
+        <TextBlock Text="Components"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,20,0,10"/>
+
+        <StackPanel Margin="0,0,0,20">
+            <TextBlock>
+                <Run FontWeight="Bold">Microcontroller:</Run> Marble Pico (Main controller handling sensors and motor control)
+            </TextBlock>
+            <TextBlock>
+                <Run FontWeight="Bold">Motor Driver:</Run> DRV8243 (Controls motor speed and direction)
+            </TextBlock>
+            <TextBlock>
+                <Run FontWeight="Bold">Power:</Run> 3S LiPo battery (Power supply)
+            </TextBlock>
+            <TextBlock>
+                <Run FontWeight="Bold">IMU Sensor:</Run> Bosch BMI 323 (Gyroscope and accelerometer module)
+            </TextBlock>
+            <TextBlock>
+                <Run FontWeight="Bold">Line Sensors:</Run> JSumo XLine 16 (Reflective sensors)
+            </TextBlock>
+            <TextBlock>
+                <Run FontWeight="Bold">Motors:</Run> NovaMax 450 RPM (DC motors for movement)
+            </TextBlock>
+        </StackPanel>
+
+        <TextBlock Text="Future Improvements"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,20,0,10"/>
+
+        <TextBlock TextWrapping="Wrap"
+                   Margin="0,0,0,20">
+            - Improve power efficiency and battery management
+            - Expand visualization features (e.g., web or PC interface)
+        </TextBlock>
+
+        <TextBlock Text="Acknowledgements"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,20,0,10"/>
+
+        <TextBlock TextWrapping="Wrap"
+                   Margin="0,0,0,20">
+            This project was developed for RoboChallenge 2025 as a practical implementation of control systems and sensor fusion. The focus was on building a functional, affordable, and tunable robot using easily available components.
         </TextBlock>
 
         <TextBlock Text="Project Contributors"
@@ -26,6 +85,14 @@
             <Hyperlink NavigateUri="https://github.com/PappBenjamin" 
                        RequestNavigate="Hyperlink_RequestNavigate">
                 Benjamin Papp
+            </Hyperlink>
+            <Hyperlink NavigateUri="https://github.com/progenor" 
+                       RequestNavigate="Hyperlink_RequestNavigate">
+                Kantor Csongor-Szilard
+            </Hyperlink>
+            <Hyperlink NavigateUri="https://github.com/bhabigel" 
+                       RequestNavigate="Hyperlink_RequestNavigate">
+                Hanga Barabás
             </Hyperlink>
         </TextBlock>
 
