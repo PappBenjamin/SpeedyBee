@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -30,6 +31,7 @@ namespace SpeedyBee.Pages
         private string _selectedCsvPath = string.Empty;
         private DispatcherTimer _playbackTimer;
         private int _currentFrameIndex = 0;
+        private bool _isServerRunning = false;
 
         public VisualizationPage()
         {
@@ -434,12 +436,56 @@ namespace SpeedyBee.Pages
             }
         }
 
+        private void StartFastApiServer()
+        {
+            if (_isServerRunning) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c cd C:\\Users\\progenor\\code\\SpeedyBee\\fastAPI && uvicorn main:app --reload",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                });
+                _isServerRunning = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error starting FastAPI server: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void StopFastApiServer()
+        {
+            if (!_isServerRunning) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "taskkill.exe",
+                    Arguments = "/f /im python.exe",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                });
+                _isServerRunning = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error stopping FastAPI server: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private async void BtnStart_Click(object sender, RoutedEventArgs e)
         {
             if (_dataSource == DataSource.Redis)
             {
                 if (_isPolling) return;
 
+                // Start the FastAPI server
+                StartFastApiServer();
+
+                // Start polling Redis
                 _isPolling = true;
                 _pollingCancellation = new CancellationTokenSource();
                 _ = StartPolling(_pollingCancellation.Token);
@@ -466,6 +512,7 @@ namespace SpeedyBee.Pages
             {
                 _isPolling = false;
                 _pollingCancellation?.Cancel();
+                StopFastApiServer();
             }
             else if (_dataSource == DataSource.Csv)
             {
@@ -481,6 +528,7 @@ namespace SpeedyBee.Pages
             {
                 _pollingCancellation?.Cancel();
                 _isPolling = false;
+                StopFastApiServer();
             }
             else if (_dataSource == DataSource.Csv)
             {
