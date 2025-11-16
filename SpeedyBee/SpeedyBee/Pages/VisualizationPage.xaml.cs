@@ -33,7 +33,7 @@ namespace SpeedyBee.Pages
         private DispatcherTimer _playbackTimer;
         private int _currentFrameIndex = 0;
         private bool _isServerRunning = false;
-        private double _cameraPitch = -0.1; // Starting pitch for looking slightly down
+        private double _cameraPitch = -0.1;
         private double _cameraYaw = 0;
         private double _cameraRoll = 0;
         private const double CameraRotationSpeed = 0.05;
@@ -42,7 +42,7 @@ namespace SpeedyBee.Pages
         public VisualizationPage()
         {
             InitializeComponent();
-            rbRedis.IsChecked = true; // Set default source after XAML initialization
+            rbRedis.IsChecked = true;
             _redisConnection = ConnectionMultiplexer.Connect("localhost:6379");
             _redis = _redisConnection.GetDatabase();
             InitializeVisualization();
@@ -53,19 +53,11 @@ namespace SpeedyBee.Pages
 
         private void InitializeVisualization()
         {
-            // Load robot 3D model from OBJ file
             LoadRobotModel();
-
-            // Initialize transform group (shared by the robot model)
             _robotTransform = new Transform3DGroup();
-
-            // Apply initial transform
             ApplyBaseTransform();
-
             bodyModel.Transform = _robotTransform;
             headModel.Transform = _robotTransform;
-
-            // Set initial camera orientation
             UpdateCameraDirection();
         }
 
@@ -80,14 +72,14 @@ namespace SpeedyBee.Pages
                 -_modelCenter.Z
             ));
 
-            // Step 2: Rotate to lay flat (rotate -90 degrees around X axis)
-            _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
-            ));
-
-            // Step 3: Rotate to face forward (rotate -90 degrees around Z axis)
+            // Step 2: Rotate 90 degrees to the right around Z axis (blue axis)
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+            ));
+
+            // Step 3: Rotate 90 degrees around Y axis (green axis) to lay flat
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)
             ));
 
             // Step 4: Scale down the robot
@@ -109,11 +101,7 @@ namespace SpeedyBee.Pages
                 var mesh = LoadObjMesh(objPath);
                 bodyMesh.Positions = mesh.Positions;
                 bodyMesh.TriangleIndices = mesh.TriangleIndices;
-
-                // Calculate the center of the model
                 _modelCenter = CalculateModelCenter(mesh.Positions);
-
-                // Clear head mesh since we're using a single model
                 headMesh.Positions.Clear();
                 headMesh.TriangleIndices.Clear();
             }
@@ -156,7 +144,6 @@ namespace SpeedyBee.Pages
 
                 if (parts[0] == "v" && parts.Length >= 4)
                 {
-                    // Vertex: v x y z
                     if (double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double x) &&
                         double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double y) &&
                         double.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out double z))
@@ -166,14 +153,13 @@ namespace SpeedyBee.Pages
                 }
                 else if (parts[0] == "f" && parts.Length >= 4)
                 {
-                    // Face: f v1 v2 v3 ... (assuming triangles, take first 3)
                     var faceIndices = new List<int>();
                     for (int i = 1; i < parts.Length && faceIndices.Count < 3; i++)
                     {
-                        var vertexPart = parts[i].Split('/')[0]; // Ignore texture/normal indices
+                        var vertexPart = parts[i].Split('/')[0];
                         if (int.TryParse(vertexPart, out int idx))
                         {
-                            faceIndices.Add(idx - 1); // OBJ is 1-based
+                            faceIndices.Add(idx - 1);
                         }
                     }
                     if (faceIndices.Count == 3)
@@ -213,14 +199,12 @@ namespace SpeedyBee.Pages
                         int.TryParse(parts[4], out int ry) &&
                         int.TryParse(parts[5], out int rz))
                     {
-                        // Convert raw accelerometer integers to small floats
                         Vector3 accel = new Vector3(
                             (ax - 32768) / 10000f,
                             (ay - 32768) / 10000f,
                             (az - 32768) / 10000f
                         );
 
-                        // Convert raw rotation integers (0-65535) to degrees 0-360
                         Vector3 rot = new Vector3(
                             rx / 65535f * 360f,
                             ry / 65535f * 360f,
@@ -244,7 +228,7 @@ namespace SpeedyBee.Pages
             while (!token.IsCancellationRequested)
             {
                 await FetchAndUpdateImuData(token);
-                await Task.Delay(TimeSpan.FromMilliseconds(50), token); // Poll every 50ms for real-time updates
+                await Task.Delay(TimeSpan.FromMilliseconds(50), token);
             }
         }
 
@@ -264,68 +248,61 @@ namespace SpeedyBee.Pages
             }
             catch (Exception ex)
             {
-                // Handle error silently, as polling continues
+                // Handle error silently
             }
         }
 
         private void UpdateImuTransform(ImuData data)
         {
-            // Normalize acceleration to small floats like in CSV (-32768 + offset)
             Vector3 acceleration = new Vector3(
                 (data.accel_x - 32768) / 10000f,
                 (data.accel_y - 32768) / 10000f,
                 (data.accel_z - 32768) / 10000f
             );
 
-            // Convert gyro to degrees, assuming raw 0-65535
             Vector3 rotation = new Vector3(
                 data.gyro_x / 65535f * 360f,
                 data.gyro_y / 65535f * 360f,
                 data.gyro_z / 65535f * 360f
             );
 
-            // Update robot transform (shared by both body and head)
             _robotTransform.Children.Clear();
 
-            // Step 1: Translate to origin (center the model at 0,0,0)
+            // Step 1: Center the model
             _robotTransform.Children.Add(new TranslateTransform3D(
                 -_modelCenter.X,
                 -_modelCenter.Y,
                 -_modelCenter.Z
             ));
 
-            // Step 2: Apply motion rotations (around the centered origin)
-            var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X);
-            var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y);
-            var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z);
-
-            _robotTransform.Children.Add(new RotateTransform3D(rotateX));
-            _robotTransform.Children.Add(new RotateTransform3D(rotateY));
-            _robotTransform.Children.Add(new RotateTransform3D(rotateZ));
-
-            // Step 3: Rotate to lay flat (rotate -90 degrees around X axis)
+            // Step 2: Apply motion rotations
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
-            ));
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X)));
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y)));
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z)));
 
-            // Step 4: Rotate to face forward (rotate -90 degrees around Z axis)
+            // Step 3: Rotate 90 degrees to the right around Z axis (blue axis)
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
             ));
 
-            // Step 5: Scale down the robot
-            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
-
-            // Step 6: Apply translation (acceleration data + base offset to sit on ground)
-            _robotTransform.Children.Add(new TranslateTransform3D(
-                acceleration.X,
-                acceleration.Y + 0.4, // Offset to make robot sit on ground
-                acceleration.Z
+            // Step 4: Rotate 90 degrees around Y axis (green axis) to lay flat
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)
             ));
 
+            // Step 5: Scale down
+            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
 
+            // Step 5: Apply translation
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                acceleration.X,
+                acceleration.Y + 0.4,
+                acceleration.Z
+            ));
         }
-
 
         private void DataSource_Checked(object sender, RoutedEventArgs e)
         {
@@ -362,46 +339,42 @@ namespace SpeedyBee.Pages
 
         private void UpdateFrameTransform(Vector3 acceleration, Vector3 rotation)
         {
-            // Update robot transform for CSV frames
             _robotTransform.Children.Clear();
 
-            // Step 1: Translate to origin (center the model at 0,0,0)
+            // Step 1: Center the model
             _robotTransform.Children.Add(new TranslateTransform3D(
                 -_modelCenter.X,
                 -_modelCenter.Y,
                 -_modelCenter.Z
             ));
 
-            // Step 2: Apply motion rotations (around the centered origin)
-            var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X);
-            var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y);
-            var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z);
-
-            _robotTransform.Children.Add(new RotateTransform3D(rotateX));
-            _robotTransform.Children.Add(new RotateTransform3D(rotateY));
-            _robotTransform.Children.Add(new RotateTransform3D(rotateZ));
-
-            // Step 3: Rotate to lay flat (rotate -90 degrees around X axis)
+            // Step 2: Apply motion rotations
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
-            ));
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X)));
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y)));
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z)));
 
-            // Step 4: Rotate to face forward (rotate -90 degrees around Z axis)
+            // Step 3: Rotate 90 degrees to the right around Z axis (blue axis)
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
             ));
 
-            // Step 5: Scale down the robot
-            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
-
-            // Step 6: Apply translation (acceleration data + base offset to sit on ground)
-            _robotTransform.Children.Add(new TranslateTransform3D(
-                acceleration.X,
-                acceleration.Y + 0.4, // Offset to make robot sit on ground
-                acceleration.Z
+            // Step 4: Rotate 90 degrees around Y axis (green axis) to lay flat
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)
             ));
 
+            // Step 5: Scale down
+            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
 
+            // Step 5: Apply translation
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                acceleration.X,
+                acceleration.Y + 0.4,
+                acceleration.Z
+            ));
         }
 
         private void PlaybackTimer_Tick(object sender, EventArgs e)
@@ -423,20 +396,15 @@ namespace SpeedyBee.Pages
 
         private void UpdateCameraDirection()
         {
-            // Compute forward direction from yaw and pitch
             Vector3D forward = new Vector3D(
                 Math.Cos(_cameraYaw) * Math.Cos(_cameraPitch),
                 Math.Sin(_cameraPitch),
                 Math.Sin(_cameraYaw) * Math.Cos(_cameraPitch)
             );
 
-            // Compute right vector
             Vector3D right = Vector3D.CrossProduct(forward, new Vector3D(0, 1, 0));
-
-            // Compute up direction with roll
             Vector3D up = new Vector3D(0, 1, 0);
 
-            // Apply roll rotation to up vector around forward axis
             double cosRoll = Math.Cos(_cameraRoll);
             double sinRoll = Math.Sin(_cameraRoll);
             up = new Vector3D(
@@ -445,10 +413,8 @@ namespace SpeedyBee.Pages
                 up.Z * cosRoll + right.Z * sinRoll
             );
 
-            // Apply roll to right vector
             right = Vector3D.CrossProduct(forward, up);
 
-            // Update camera
             camera.LookDirection = forward;
             camera.UpDirection = up;
         }
@@ -485,11 +451,9 @@ namespace SpeedyBee.Pages
                     break;
                 case Key.Z:
                     camera.Position += camera.LookDirection * CameraMovementSpeed;
-                    updated = false; // No need to recompute direction, just position
                     break;
                 case Key.X:
                     camera.Position -= camera.LookDirection * CameraMovementSpeed;
-                    updated = false;
                     break;
             }
 
@@ -545,10 +509,7 @@ namespace SpeedyBee.Pages
             {
                 if (_isPolling) return;
 
-                // Start the FastAPI server
                 StartFastApiServer();
-
-                // Start polling Redis
                 _isPolling = true;
                 _pollingCancellation = new CancellationTokenSource();
                 _ = StartPolling(_pollingCancellation.Token);
@@ -599,10 +560,7 @@ namespace SpeedyBee.Pages
                 _currentFrameIndex = 0;
             }
 
-            // Reset robot transform to initial state
             ApplyBaseTransform();
-
-            // Reset camera to initial position and orientation
             camera.Position = new Point3D(0, 2.4, 5);
             _cameraPitch = -0.1;
             _cameraYaw = 0;
