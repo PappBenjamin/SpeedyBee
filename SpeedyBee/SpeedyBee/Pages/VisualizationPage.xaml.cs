@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,16 +17,18 @@ namespace SpeedyBee.Pages
 {
     public partial class VisualizationPage : Page
     {
-        private List<MotionFrame> _frames = new();
-        private int _currentFrame = 0;
-        private DispatcherTimer _timer;
+        private HttpClient _httpClient;
+        private CancellationTokenSource? _pollingCancellation;
+        private List<MotionFrame> _frames = new(); // Kept for future optional choice implementation
         private Transform3DGroup _robotTransform;
-        private bool _isPlaying = false;
+        private bool _isPolling = false;
         private Point3D _modelCenter;
+        private const string ApiBaseUrl = "http://localhost:8000";
 
         public VisualizationPage()
         {
             InitializeComponent();
+            _httpClient = new HttpClient();
             InitializeVisualization();
             LoadMotionData();
         }
@@ -40,13 +46,6 @@ namespace SpeedyBee.Pages
 
             bodyModel.Transform = _robotTransform;
             headModel.Transform = _robotTransform;
-
-            // Initialize timer for animation
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(50) // 20 FPS
-            };
-            _timer.Tick += Timer_Tick;
         }
 
         private void ApplyBaseTransform()
@@ -218,19 +217,51 @@ namespace SpeedyBee.Pages
             }
         }
 
-        private void Timer_Tick(object? sender, EventArgs e)
+        private async Task StartPolling(CancellationToken token)
         {
-            if (_frames.Count == 0) return;
-
-            _currentFrame = (_currentFrame + 1) % _frames.Count;
-            UpdateStickTransform();
+            while (!token.IsCancellationRequested)
+            {
+                await FetchAndUpdateImuData(token);
+                await Task.Delay(TimeSpan.FromMilliseconds(50), token); // Poll every 50ms for real-time updates
+            }
         }
 
-        private void UpdateStickTransform()
+        private async Task FetchAndUpdateImuData(CancellationToken token)
         {
-            if (_frames.Count == 0 || _currentFrame >= _frames.Count) return;
+            try
+            {
+                var response = await _httpClient.GetAsync($"{ApiBaseUrl}/get-from-serial", token);
+                response.EnsureSuccessStatusCode();
 
-            var frame = _frames[_currentFrame];
+                var json = await response.Content.ReadAsStringAsync(token);
+                var imuResponse = JsonSerializer.Deserialize<ImuResponse>(json);
+
+                if (imuResponse?.data != null)
+                {
+                    Dispatcher.Invoke(() => UpdateImuTransform(imuResponse.data));
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle error silently, as polling continues
+            }
+        }
+
+        private void UpdateImuTransform(ImuData data)
+        {
+            // Normalize acceleration to small floats like in CSV (-32768 + offset)
+            Vector3 acceleration = new Vector3(
+                (data.accel_x - 32768) / 10000f,
+                (data.accel_y - 32768) / 10000f,
+                (data.accel_z - 32768) / 10000f
+            );
+
+            // Convert gyro to degrees, assuming raw 0-65535
+            Vector3 rotation = new Vector3(
+                data.gyro_x / 65535f * 360f,
+                data.gyro_y / 65535f * 360f,
+                data.gyro_z / 65535f * 360f
+            );
 
             // Update robot transform (shared by both body and head)
             _robotTransform.Children.Clear();
@@ -243,9 +274,9 @@ namespace SpeedyBee.Pages
             ));
 
             // Step 2: Apply motion rotations (around the centered origin)
-            var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), frame.Rotation.X);
-            var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), frame.Rotation.Y);
-            var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), frame.Rotation.Z);
+            var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X);
+            var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), rotation.Y);
+            var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z);
 
             _robotTransform.Children.Add(new RotateTransform3D(rotateX));
             _robotTransform.Children.Add(new RotateTransform3D(rotateY));
@@ -266,13 +297,13 @@ namespace SpeedyBee.Pages
 
             // Step 6: Apply translation (acceleration data + base offset to sit on ground)
             _robotTransform.Children.Add(new TranslateTransform3D(
-                frame.Acceleration.X,
-                frame.Acceleration.Y + 0.4, // Offset to make robot sit on ground
-                frame.Acceleration.Z
+                acceleration.X,
+                acceleration.Y + 0.4, // Offset to make robot sit on ground
+                acceleration.Z
             ));
 
             // Update camera to follow the robot
-            UpdateCameraPosition(frame.Acceleration);
+            UpdateCameraPosition(acceleration);
         }
 
         private void UpdateCameraPosition(Vector3 stickPosition)
@@ -298,33 +329,29 @@ namespace SpeedyBee.Pages
             camera.LookDirection = lookDirection;
         }
 
-        private void BtnStart_Click(object sender, RoutedEventArgs e)
+        private async void BtnStart_Click(object sender, RoutedEventArgs e)
         {
-            if (_frames.Count == 0)
-            {
-                MessageBox.Show("No motion data loaded!", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            if (_isPolling) return;
 
-            _isPlaying = true;
-            _timer.Start();
+            _isPolling = true;
+            _pollingCancellation = new CancellationTokenSource();
+            _ = StartPolling(_pollingCancellation.Token);
             btnStart.IsEnabled = false;
             btnPause.IsEnabled = true;
         }
 
-        private void BtnPause_Click(object sender, RoutedEventArgs e)
+        private async void BtnPause_Click(object sender, RoutedEventArgs e)
         {
-            _isPlaying = false;
-            _timer.Stop();
+            _isPolling = false;
+            _pollingCancellation?.Cancel();
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
         }
 
-        private void BtnReset_Click(object sender, RoutedEventArgs e)
+        private async void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            _timer.Stop();
-            _currentFrame = 0;
-            _isPlaying = false;
+            _pollingCancellation?.Cancel();
+            _isPolling = false;
 
             // Reset robot transform to initial state
             ApplyBaseTransform();
@@ -341,6 +368,23 @@ namespace SpeedyBee.Pages
         {
             public Vector3 Acceleration { get; set; }
             public Vector3 Rotation { get; set; }
+        }
+
+        private class ImuResponse
+        {
+            public ImuData? data { get; set; }
+        }
+
+        private class ImuData
+        {
+            public string? timestamp { get; set; }
+            public float accel_x { get; set; }
+            public float accel_y { get; set; }
+            public float accel_z { get; set; }
+            public float gyro_x { get; set; }
+            public float gyro_y { get; set; }
+            public float gyro_z { get; set; }
+            public float temperature { get; set; }
         }
     }
 }
