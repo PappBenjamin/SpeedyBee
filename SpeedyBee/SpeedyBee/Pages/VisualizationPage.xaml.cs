@@ -74,13 +74,9 @@ namespace SpeedyBee.Pages
 
             // Step 2: Rotate 90 degrees to the right around Z axis (blue axis)
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
             ));
 
-            // Step 3: Rotate 90 degrees around Y axis (green axis) to lay flat
-            _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)
-            ));
 
             // Step 4: Scale down the robot
             _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
