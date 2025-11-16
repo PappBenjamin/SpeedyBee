@@ -74,9 +74,13 @@ namespace SpeedyBee.Pages
 
             // Step 2: Rotate 90 degrees to the right around Z axis (blue axis)
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
             ));
 
+            // Step 3: Rotate 90 degrees around Y axis (green axis) to lay flat
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)
+            ));
 
             // Step 4: Scale down the robot
             _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
@@ -256,10 +260,12 @@ namespace SpeedyBee.Pages
                 (data.accel_z - 32768) / 10000f
             );
 
+            // Convert gyro readings - these are angular velocities, not absolute angles
+            // Treating them as small incremental rotations from neutral position
             Vector3 rotation = new Vector3(
-                data.gyro_x / 65535f * 360f,
-                data.gyro_y / 65535f * 360f,
-                data.gyro_z / 65535f * 360f
+                (data.gyro_x - 32768) / 182.04f,  // Convert to degrees from center
+                (data.gyro_y - 32768) / 182.04f,
+                (data.gyro_z - 32768) / 182.04f
             );
 
             _robotTransform.Children.Clear();
@@ -271,7 +277,7 @@ namespace SpeedyBee.Pages
                 -_modelCenter.Z
             ));
 
-            // Step 2: Apply motion rotations
+            // Step 2: Apply motion rotations (small rotations from neutral)
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X)));
             _robotTransform.Children.Add(new RotateTransform3D(
@@ -279,17 +285,12 @@ namespace SpeedyBee.Pages
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z)));
 
-            // Step 3: Rotate 90 degrees to the right around Z axis (blue axis)
+            // Step 3: Apply base orientation (robot facing forward along X-axis, laying flat)
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
             ));
 
-            // Step 4: Rotate 90 degrees around Y axis (green axis) to lay flat
-            _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)
-            ));
-
-            // Step 5: Scale down
+            // Step 4: Scale down
             _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
 
             // Step 5: Apply translation
@@ -344,7 +345,7 @@ namespace SpeedyBee.Pages
                 -_modelCenter.Z
             ));
 
-            // Step 2: Apply motion rotations
+            // Step 2: Apply motion rotations (already converted in LoadMotionData)
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.X)));
             _robotTransform.Children.Add(new RotateTransform3D(
@@ -352,17 +353,12 @@ namespace SpeedyBee.Pages
             _robotTransform.Children.Add(new RotateTransform3D(
                 new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z)));
 
-            // Step 3: Rotate 90 degrees to the right around Z axis (blue axis)
+            // Step 3: Apply base orientation (robot facing forward along X-axis, laying flat)
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
             ));
 
-            // Step 4: Rotate 90 degrees around Y axis (green axis) to lay flat
-            _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)
-            ));
-
-            // Step 5: Scale down
+            // Step 4: Scale down
             _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
 
             // Step 5: Apply translation
