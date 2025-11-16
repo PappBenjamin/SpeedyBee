@@ -314,32 +314,9 @@ namespace SpeedyBee.Pages
                 acceleration.Z
             ));
 
-            // Update camera to follow the robot
-            UpdateCameraPosition(acceleration);
+
         }
 
-        private void UpdateCameraPosition(Vector3 stickPosition)
-        {
-            // Camera follows the stick at a fixed distance
-            double cameraDistance = 5.0; // Distance from camera to stick
-            double cameraHeight = 2.0;   // Height offset for better viewing angle
-
-            // Position camera behind and above the stick (accounting for ground offset)
-            camera.Position = new Point3D(
-                stickPosition.X,
-                stickPosition.Y + cameraHeight + 0.4, // Account for robot sitting on ground
-                stickPosition.Z + cameraDistance
-            );
-
-            // Look at the stick's current position (accounting for ground offset)
-            Vector3D lookDirection = new Vector3D(
-                stickPosition.X - camera.Position.X,
-                (stickPosition.Y + 0.4) - camera.Position.Y, // Look at robot on ground
-                stickPosition.Z - camera.Position.Z
-            );
-
-            camera.LookDirection = lookDirection;
-        }
 
         private void DataSource_Checked(object sender, RoutedEventArgs e)
         {
@@ -415,8 +392,7 @@ namespace SpeedyBee.Pages
                 acceleration.Z
             ));
 
-            // Update camera to follow the robot
-            UpdateCameraPosition(acceleration);
+
         }
 
         private void PlaybackTimer_Tick(object sender, EventArgs e)

@@ -33,9 +33,9 @@
                 Margin="0,10">
             <Viewport3D x:Name="viewport">
                 <Viewport3D.Camera>
-                    <PerspectiveCamera x:Name="camera" 
-                                     Position="0,0,5" 
-                                     LookDirection="0,0,-1" 
+                    <PerspectiveCamera x:Name="camera"
+                                     Position="0,2.4,5"
+                                     LookDirection="0,-0.4,-1"
                                      UpDirection="0,1,0"
                                      FieldOfView="60"/>
                 </Viewport3D.Camera>
