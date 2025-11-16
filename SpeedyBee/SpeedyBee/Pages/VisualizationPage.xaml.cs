@@ -37,6 +37,7 @@ namespace SpeedyBee.Pages
         private double _cameraYaw = 0;
         private double _cameraRoll = 0;
         private const double CameraRotationSpeed = 0.05;
+        private const double CameraMovementSpeed = 0.2;
 
         public VisualizationPage()
         {
@@ -481,6 +482,14 @@ namespace SpeedyBee.Pages
                 case Key.E:
                     _cameraRoll += CameraRotationSpeed;
                     updated = true;
+                    break;
+                case Key.Z:
+                    camera.Position += camera.LookDirection * CameraMovementSpeed;
+                    updated = false; // No need to recompute direction, just position
+                    break;
+                case Key.X:
+                    camera.Position -= camera.LookDirection * CameraMovementSpeed;
+                    updated = false;
                     break;
             }
 
