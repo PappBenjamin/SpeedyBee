@@ -192,7 +192,7 @@ namespace SpeedyBee.Pages
             _robotTransform.Children.Clear();
 
             // Scale down the robot very much
-            _robotTransform.Children.Add(new ScaleTransform3D(0.01, 0.01, 0.01));
+            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
 
             // Rotate the robot front 90 degrees to the left
             _robotTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)));
