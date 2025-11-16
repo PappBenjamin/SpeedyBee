@@ -18,6 +18,7 @@ namespace SpeedyBee.Pages
         private DispatcherTimer _timer;
         private Transform3DGroup _robotTransform;
         private bool _isPlaying = false;
+        private Point3D _modelCenter;
 
         public VisualizationPage()
         {
@@ -34,11 +35,8 @@ namespace SpeedyBee.Pages
             // Initialize transform group (shared by the robot model)
             _robotTransform = new Transform3DGroup();
 
-            // Scale down the robot very much
-            _robotTransform.Children.Add(new ScaleTransform3D(0.01, 0.01, 0.01));
-
-            // Rotate the robot front 90 degrees to the left
-            _robotTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)));
+            // Apply initial transform
+            ApplyBaseTransform();
 
             bodyModel.Transform = _robotTransform;
             headModel.Transform = _robotTransform;
@@ -49,6 +47,31 @@ namespace SpeedyBee.Pages
                 Interval = TimeSpan.FromMilliseconds(50) // 20 FPS
             };
             _timer.Tick += Timer_Tick;
+        }
+
+        private void ApplyBaseTransform()
+        {
+            _robotTransform.Children.Clear();
+
+            // Step 1: Translate to origin (center the model at 0,0,0)
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                -_modelCenter.X,
+                -_modelCenter.Y,
+                -_modelCenter.Z
+            ));
+
+            // Step 2: Rotate to lay flat (rotate -90 degrees around X axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
+            ));
+
+            // Step 3: Rotate to face forward (rotate -90 degrees around Z axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+            ));
+
+            // Step 4: Scale down the robot
+            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
         }
 
         private void LoadRobotModel()
@@ -67,6 +90,9 @@ namespace SpeedyBee.Pages
                 bodyMesh.Positions = mesh.Positions;
                 bodyMesh.TriangleIndices = mesh.TriangleIndices;
 
+                // Calculate the center of the model
+                _modelCenter = CalculateModelCenter(mesh.Positions);
+
                 // Clear head mesh since we're using a single model
                 headMesh.Positions.Clear();
                 headMesh.TriangleIndices.Clear();
@@ -75,6 +101,26 @@ namespace SpeedyBee.Pages
             {
                 MessageBox.Show($"Error loading robot model: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private Point3D CalculateModelCenter(Point3DCollection positions)
+        {
+            if (positions.Count == 0)
+                return new Point3D(0, 0, 0);
+
+            double sumX = 0, sumY = 0, sumZ = 0;
+            foreach (var point in positions)
+            {
+                sumX += point.X;
+                sumY += point.Y;
+                sumZ += point.Z;
+            }
+
+            return new Point3D(
+                sumX / positions.Count,
+                sumY / positions.Count,
+                sumZ / positions.Count
+            );
         }
 
         private MeshGeometry3D LoadObjMesh(string filePath)
@@ -121,8 +167,6 @@ namespace SpeedyBee.Pages
             mesh.TriangleIndices = new Int32Collection(indices);
             return mesh;
         }
-
-
 
         private void LoadMotionData()
         {
@@ -191,13 +235,14 @@ namespace SpeedyBee.Pages
             // Update robot transform (shared by both body and head)
             _robotTransform.Children.Clear();
 
-            // Scale down the robot very much
-            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
+            // Step 1: Translate to origin (center the model at 0,0,0)
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                -_modelCenter.X,
+                -_modelCenter.Y,
+                -_modelCenter.Z
+            ));
 
-            // Rotate the robot front 90 degrees to the left
-            _robotTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)));
-
-            // Apply rotation transformations (in degrees)
+            // Step 2: Apply motion rotations (around the centered origin)
             var rotateX = new AxisAngleRotation3D(new Vector3D(1, 0, 0), frame.Rotation.X);
             var rotateY = new AxisAngleRotation3D(new Vector3D(0, 1, 0), frame.Rotation.Y);
             var rotateZ = new AxisAngleRotation3D(new Vector3D(0, 0, 1), frame.Rotation.Z);
@@ -206,7 +251,20 @@ namespace SpeedyBee.Pages
             _robotTransform.Children.Add(new RotateTransform3D(rotateY));
             _robotTransform.Children.Add(new RotateTransform3D(rotateZ));
 
-            // Apply translation (acceleration data + base offset to sit on ground)
+            // Step 3: Rotate to lay flat (rotate -90 degrees around X axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)
+            ));
+
+            // Step 4: Rotate to face forward (rotate -90 degrees around Z axis)
+            _robotTransform.Children.Add(new RotateTransform3D(
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), -90)
+            ));
+
+            // Step 5: Scale down the robot
+            _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
+
+            // Step 6: Apply translation (acceleration data + base offset to sit on ground)
             _robotTransform.Children.Add(new TranslateTransform3D(
                 frame.Acceleration.X,
                 frame.Acceleration.Y + 0.4, // Offset to make robot sit on ground
@@ -268,12 +326,12 @@ namespace SpeedyBee.Pages
             _currentFrame = 0;
             _isPlaying = false;
 
-            // Reset robot transform
-            _robotTransform.Children.Clear();
+            // Reset robot transform to initial state
+            ApplyBaseTransform();
 
             // Reset camera to initial position
-            camera.Position = new Point3D(0, 0, 5);
-            camera.LookDirection = new Vector3D(0, 0, -1);
+            camera.Position = new Point3D(0, 2.4, 5);
+            camera.LookDirection = new Vector3D(0, -0.4, -1);
 
             btnStart.IsEnabled = true;
             btnPause.IsEnabled = false;
