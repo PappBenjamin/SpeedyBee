@@ -66,6 +66,8 @@ def push_imu_to_database(imu_data):
 
         # Insert data into PostgreSQL
 
+
+
         cursor.execute(
             "INSERT INTO imu_data (timestamp, accel_x, accel_y, accel_z, rot_x, rot_y, rot_z) VALUES (%s,%s,%s,%s,%s,%s,%s)",
             (timestamp, accel_x, accel_y, accel_z, rot_x, rot_y, rot_z)

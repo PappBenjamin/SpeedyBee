@@ -7,5 +7,6 @@
     <Application.Resources>
         <converters:NotNullConverter x:Key="NotNullConverter"/>
         <converters:NotNullToVisibilityConverter x:Key="NotNullToVisibilityConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Application.Resources>
 </Application>

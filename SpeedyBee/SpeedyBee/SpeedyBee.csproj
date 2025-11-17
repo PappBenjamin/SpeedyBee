@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTK.Mathematics" Version="4.9.4" />

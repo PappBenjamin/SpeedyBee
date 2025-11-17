@@ -9,105 +9,177 @@
         <vm:RobotChoiceViewModel />
     </Page.DataContext>
 
-    <StackPanel Margin="20">
-        <TextBlock Text="Select Robot" 
-                   FontSize="24" 
-                   FontWeight="Bold"
-                   Margin="0,0,0,20"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <TextBlock Text="Select Robot" 
+                      FontSize="24" 
+                      FontWeight="Bold"
+                      Margin="0,0,0,20"/>
 
-        <!-- Port Selection -->
-        <GroupBox Header="Connection Settings" Margin="0,0,0,20">
-            <Grid Margin="10">
+            <!-- Port Selection -->
+            <GroupBox Header="Connection Settings" Margin="0,0,0,20">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="USB Port:" 
+                              VerticalAlignment="Center"
+                              Margin="0,0,10,0"/>
+                    <ComboBox Grid.Column="1"
+                             ItemsSource="{Binding AvailablePorts}"
+                             SelectedItem="{Binding SelectedPort}"
+                             Margin="0,5"/>
+                </Grid>
+            </GroupBox>
+
+            <Grid Margin="0,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Robot Name" 
+                          FontWeight="Bold" 
+                          Grid.Column="0"/>
+                <TextBlock Text="Description" 
+                          FontWeight="Bold" 
+                          Grid.Column="1"/>
+                <TextBlock Text="Action" 
+                          FontWeight="Bold" 
+                          Grid.Column="2"/>
+
+                <Border Grid.Row="1" 
+                        Grid.ColumnSpan="3" 
+                        BorderBrush="Gray" 
+                        BorderThickness="0,1,0,0" 
+                        Margin="0,5"/>
+            </Grid>
+
+            <!-- Robot 1 -->
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <TextBlock Text="USB Port:" 
-                          VerticalAlignment="Center"
-                          Margin="0,0,10,0"/>
-                <ComboBox Grid.Column="1"
-                         ItemsSource="{Binding AvailablePorts}"
-                         SelectedItem="{Binding SelectedPort}"
-                         Margin="0,5"/>
+                <TextBlock Text="SpeedyBee v1" 
+                          Grid.Column="0"/>
+                <TextBlock Text="Prototype model for PD control tests" 
+                          Grid.Column="1"/>
+                <Button Content="Select" 
+                        Grid.Column="2" 
+                        Padding="20,5"
+                        Click="SelectRobot_Click"
+                        Tag="v1"
+                        IsEnabled="{Binding SelectedPort, Converter={StaticResource NotNullConverter}}"/>
             </Grid>
-        </GroupBox>
 
-        <Grid Margin="0,10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            <!-- Robot 2 -->
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Text="SpeedyBee v2" 
+                          Grid.Column="0"/>
+                <TextBlock Text="Competition-tuned version" 
+                          Grid.Column="1"/>
+                <Button Content="Select" 
+                        Grid.Column="2" 
+                        Padding="20,5"
+                        Click="SelectRobot_Click"
+                        Tag="v2"
+                        IsEnabled="{Binding SelectedPort, Converter={StaticResource NotNullConverter}}"/>
+            </Grid>
 
-            <TextBlock Text="Robot Name" 
-                       FontWeight="Bold" 
-                       Grid.Column="0"/>
-            <TextBlock Text="Description" 
-                       FontWeight="Bold" 
-                       Grid.Column="1"/>
-            <TextBlock Text="Action" 
-                       FontWeight="Bold" 
-                       Grid.Column="2"/>
+            <TextBlock x:Name="SelectedRobotText"
+                      Margin="0,20,0,0"
+                      FontWeight="Bold"/>
 
-            <Border Grid.Row="1" 
-                    Grid.ColumnSpan="3" 
-                    BorderBrush="Gray" 
-                    BorderThickness="0,1,0,0" 
-                    Margin="0,5"/>
-        </Grid>
+            <TextBlock Text="{Binding SelectedPort, StringFormat=Selected Port: {0}}"
+                      Margin="0,10,0,0"
+                      FontWeight="Bold"
+                      Visibility="{Binding SelectedPort, Converter={StaticResource NotNullToVisibilityConverter}}"/>
 
-        <!-- Robot 1 -->
-        <Grid Margin="0,5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
-            <TextBlock Text="SpeedyBee v1" 
-                       Grid.Column="0"/>
-            <TextBlock Text="Prototype model for PD control tests" 
-                       Grid.Column="1"/>
-            <Button Content="Select" 
-                    Grid.Column="2" 
-                    Padding="20,5"
-                    Click="SelectRobot_Click"
-                    Tag="v1"
-                    IsEnabled="{Binding SelectedPort, Converter={StaticResource NotNullConverter}}"/>
-        </Grid>
+            <!-- PID Configuration -->
+            <GroupBox Header="PID Configuration" 
+                     Margin="0,20,0,0"
+                     Visibility="{Binding IsPidConfigVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Margin="10">
+                    <Grid Margin="0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-        <!-- Robot 2 -->
-        <Grid Margin="0,5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
-            <TextBlock Text="SpeedyBee v2" 
-                       Grid.Column="0"/>
-            <TextBlock Text="Competition-tuned version" 
-                       Grid.Column="1"/>
-            <Button Content="Select" 
-                    Grid.Column="2" 
-                    Padding="20,5"
-                    Click="SelectRobot_Click"
-                    Tag="v2"
-                    IsEnabled="{Binding SelectedPort, Converter={StaticResource NotNullConverter}}"/>
-        </Grid>
+                        <!-- Kp Parameter -->
+                        <TextBlock Text="Kp:" 
+                                  Grid.Row="0" 
+                                  Grid.Column="0"
+                                  Margin="0,0,10,5"
+                                  VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="0" 
+                                Grid.Column="1"
+                                Margin="0,0,0,5"
+                                Text="{Binding Kp, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <TextBlock x:Name="SelectedRobotText"
-                   Margin="0,20,0,0"
-                   FontWeight="Bold"/>
+                        <!-- Kd Parameter -->
+                        <TextBlock Text="Kd:" 
+                                  Grid.Row="1" 
+                                  Grid.Column="0"
+                                  Margin="0,0,10,5"
+                                  VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" 
+                                Grid.Column="1"
+                                Margin="0,0,0,5"
+                                Text="{Binding Kd, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <TextBlock Text="{Binding SelectedPort, StringFormat=Selected Port: {0}}"
-                   Margin="0,10,0,0"
-                   FontWeight="Bold"
-                   Visibility="{Binding SelectedPort, Converter={StaticResource NotNullToVisibilityConverter}}"/>
-    </StackPanel>
+                        <!-- Base speed -->
+                        <TextBlock Text="Base speed:" 
+                                  Grid.Row="2" 
+                                  Grid.Column="0"
+                                  Margin="0,0,10,5"
+                                  VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="2" 
+                                Grid.Column="1"
+                                Margin="0,0,0,5"
+                                Text="{Binding baseSpeed , UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <!-- Max turn speed -->
+                        <TextBlock Text="Max turn speed:" 
+                                  Grid.Row="3" 
+                                  Grid.Column="0"
+                                  Margin="0,0,10,5"
+                                  VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="3" 
+                                Grid.Column="1"
+                                Margin="0,0,0,5"
+                                Text="{Binding maxTurnSpeed , UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+
+                    <Button Content="Update Parameters" 
+                            Margin="0,10,0,0"
+                            Padding="10,5"
+                            HorizontalAlignment="Right"
+                            Command="{Binding UpdatePidParametersCommand}"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

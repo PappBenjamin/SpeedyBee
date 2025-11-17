@@ -9,7 +9,7 @@ extern Adafruit_SSD1306 display;
 
 void displayInit();
 void displayClear();
-void displayPrint(const char *text);
+void displayPrint(const char *text, double value = (-1.0));
 void display_IR(u16_t *irValues);
 
 #endif // DISPLAY_H
