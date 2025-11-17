@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
@@ -337,19 +338,59 @@ namespace SpeedyBee.Pages
             }
         }
 
-        private void btnSelectCsv_Click(object sender, RoutedEventArgs e)
+        private async void btnSelectCsv_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog
+            var loadDialog = new SpeedyBee.Dialogs.LoadRecordingDialog();
+            if (loadDialog.ShowDialog() == true)
             {
-                InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
-                Filter = "CSV files (*.csv)|*.csv",
-                Title = "Select Motion Data CSV"
-            };
-            if (dialog.ShowDialog() == true)
-            {
-                _selectedCsvPath = dialog.FileName;
-                lblSelectedFile.Content = Path.GetFileName(dialog.FileName);
-                LoadMotionData(_selectedCsvPath);
+                if (loadDialog.LoadFromCsv)
+                {
+                    // Load from CSV
+                    if (!string.IsNullOrEmpty(loadDialog.SelectedCsvPath))
+                    {
+                        _selectedCsvPath = loadDialog.SelectedCsvPath;
+                        lblSelectedFile.Content = Path.GetFileName(loadDialog.SelectedCsvPath);
+                        LoadMotionData(_selectedCsvPath);
+                    }
+                }
+                else
+                {
+                    // Load from PostgreSQL
+                    if (loadDialog.SelectedRun != null)
+                    {
+                        try
+                        {
+                            _frames.Clear();
+                            _currentFrameIndex = 0;
+
+                            foreach (var frame in loadDialog.SelectedRun.Frames.OrderBy(f => f.FrameNumber))
+                            {
+                                Vector3 accel = new Vector3(
+                                    (frame.AccelX - 32768) / 10000f,
+                                    (frame.AccelY - 32768) / 10000f,
+                                    (frame.AccelZ - 32768) / 10000f
+                                );
+
+                                Vector3 rot = new Vector3(
+                                    frame.GyroX / 65535f * 360f,
+                                    frame.GyroY / 65535f * 360f,
+                                    frame.GyroZ / 65535f * 360f
+                                );
+
+                                _frames.Add(new MotionFrame { Acceleration = accel, Rotation = rot });
+                            }
+
+                            lblSelectedFile.Content = $"Loaded: {loadDialog.SelectedRun.Name} ({_frames.Count} frames)";
+                            MessageBox.Show($"Loaded {_frames.Count} motion frames from '{loadDialog.SelectedRun.Name}'", 
+                                "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Error loading motion data: {ex.Message}", "Error", 
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                }
             }
         }
 
@@ -602,40 +643,87 @@ namespace SpeedyBee.Pages
             btnRecordStop.IsEnabled = true;
         }
 
-        private void BtnRecordStop_Click(object sender, RoutedEventArgs e)
+        private async void BtnRecordStop_Click(object sender, RoutedEventArgs e)
         {
             _isRecording = false;
-            var dialog = new SaveFileDialog
+
+            var saveDialog = new SpeedyBee.Dialogs.SaveRecordingDialog();
+            if (saveDialog.ShowDialog() == true)
             {
-                DefaultExt = ".csv",
-                Filter = "CSV files (*.csv)|*.csv",
-                Title = "Save Recorded Motion Data",
-                InitialDirectory = AppDomain.CurrentDomain.BaseDirectory
-            };
-            if (dialog.ShowDialog() == true)
-            {
-                try
+                var recordingName = saveDialog.RecordingName;
+
+                if (saveDialog.SaveToCsv)
                 {
-                    using (var writer = new StreamWriter(dialog.FileName))
+                    // Save to CSV
+                    var fileDialog = new SaveFileDialog
                     {
-                        foreach (var data in _recordedData)
+                        DefaultExt = ".csv",
+                        Filter = "CSV files (*.csv)|*.csv",
+                        Title = "Save Recorded Motion Data",
+                        InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                        FileName = recordingName
+                    };
+
+                    if (fileDialog.ShowDialog() == true)
+                    {
+                        try
                         {
-                            int ax = (int)Math.Round(data.accel_x);
-                            int ay = (int)Math.Round(data.accel_y);
-                            int az = (int)Math.Round(data.accel_z);
-                            int gx = (int)Math.Round(data.gyro_x);
-                            int gy = (int)Math.Round(data.gyro_y);
-                            int gz = (int)Math.Round(data.gyro_z);
-                            writer.WriteLine($"{ax},{ay},{az},{gx},{gy},{gz}");
+                            using (var writer = new StreamWriter(fileDialog.FileName))
+                            {
+                                foreach (var data in _recordedData)
+                                {
+                                    int ax = (int)Math.Round(data.accel_x);
+                                    int ay = (int)Math.Round(data.accel_y);
+                                    int az = (int)Math.Round(data.accel_z);
+                                    int gx = (int)Math.Round(data.gyro_x);
+                                    int gy = (int)Math.Round(data.gyro_y);
+                                    int gz = (int)Math.Round(data.gyro_z);
+                                    writer.WriteLine($"{ax},{ay},{az},{gx},{gy},{gz}");
+                                }
+                            }
+                            MessageBox.Show($"Recorded {_recordedData.Count} frames to {Path.GetFileName(fileDialog.FileName)}",
+                                "Recording Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Error saving recording: {ex.Message}", "Error",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                     }
-                    MessageBox.Show($"Recorded {_recordedData.Count} frames to {Path.GetFileName(dialog.FileName)}", "Recording Saved", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show($"Error saving recording: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // Save to PostgreSQL
+                    try
+                    {
+                        var apiService = new SpeedyBee.Services.ApiService();
+                        var frames = _recordedData.Select((data, index) => new SpeedyBee.Services.FrameData
+                        {
+                            AccelX = (int)Math.Round(data.accel_x),
+                            AccelY = (int)Math.Round(data.accel_y),
+                            AccelZ = (int)Math.Round(data.accel_z),
+                            GyroX = (int)Math.Round(data.gyro_x),
+                            GyroY = (int)Math.Round(data.gyro_y),
+                            GyroZ = (int)Math.Round(data.gyro_z),
+                            FrameNumber = index
+                        }).ToList();
+
+                        var result = await apiService.SaveRunAsync(recordingName, frames);
+
+                        if (result != null)
+                        {
+                            MessageBox.Show($"Recorded {result.FrameCount} frames saved to database as '{result.Name}'",
+                                "Recording Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error saving to database: {ex.Message}", "Error",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
+
             btnRecordStart.IsEnabled = true;
             btnRecordStop.IsEnabled = false;
         }

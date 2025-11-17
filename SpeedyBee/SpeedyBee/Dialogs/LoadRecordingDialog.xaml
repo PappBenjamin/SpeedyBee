@@ -1,0 +1,132 @@
+<Window x:Class="SpeedyBee.Dialogs.LoadRecordingDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Load Recording" 
+        Height="450" 
+        Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Load Recording From:" 
+                   FontSize="16" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,15"/>
+
+        <GroupBox Grid.Row="1" 
+                  Header="Load Source" 
+                  Margin="0,0,0,15">
+            <StackPanel Margin="10">
+                <RadioButton x:Name="rbLoadCsv" 
+                            Content="Load from CSV file" 
+                            IsChecked="True" 
+                            Margin="0,0,0,10"
+                            Checked="LoadSource_Changed"/>
+                <RadioButton x:Name="rbLoadPostgres" 
+                            Content="Load from PostgreSQL database"
+                            Checked="LoadSource_Changed"/>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- CSV Section -->
+        <StackPanel Grid.Row="2" 
+                    x:Name="pnlCsvSection"
+                    Margin="0,0,0,15">
+            <Button Content="Browse CSV File..." 
+                    Click="BtnBrowseCsv_Click"
+                    Width="150"
+                    HorizontalAlignment="Left"/>
+            <TextBlock x:Name="txtSelectedFile" 
+                      Margin="0,5,0,0"
+                      FontStyle="Italic"
+                      Foreground="Gray"/>
+        </StackPanel>
+
+        <!-- PostgreSQL Section -->
+        <StackPanel Grid.Row="2" 
+                    x:Name="pnlPostgresSection"
+                    Visibility="Collapsed"
+                    Margin="0,0,0,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox x:Name="txtSearch" 
+                        Padding="5"
+                        VerticalContentAlignment="Center"
+                        TextChanged="TxtSearch_TextChanged"/>
+                <Button Grid.Column="1" 
+                        Content="Search" 
+                        Width="80"
+                        Margin="10,0,0,0"
+                        Click="BtnSearch_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- Recording List (for PostgreSQL) -->
+        <GroupBox Grid.Row="3" 
+                  x:Name="grpRecordingList"
+                  Header="Available Recordings"
+                  Visibility="Collapsed">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <ListView x:Name="lvRecordings" 
+                         SelectionMode="Single"
+                         SelectionChanged="LvRecordings_SelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Name" 
+                                          DisplayMemberBinding="{Binding Name}" 
+                                          Width="200"/>
+                            <GridViewColumn Header="Frames" 
+                                          DisplayMemberBinding="{Binding FrameCount}" 
+                                          Width="80"/>
+                            <GridViewColumn Header="Created" 
+                                          DisplayMemberBinding="{Binding CreatedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" 
+                                          Width="150"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <TextBlock Grid.Row="1" 
+                          x:Name="txtLoadingStatus"
+                          Margin="0,10,0,0"
+                          Visibility="Collapsed"
+                          Foreground="Gray"
+                          FontStyle="Italic"/>
+            </Grid>
+        </GroupBox>
+
+        <StackPanel Grid.Row="4" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,15,0,0">
+            <Button x:Name="btnLoad"
+                    Content="Load" 
+                    Width="80" 
+                    Height="30" 
+                    Margin="0,0,10,0"
+                    Click="BtnLoad_Click"
+                    IsDefault="True"
+                    IsEnabled="False"/>
+            <Button Content="Cancel" 
+                    Width="80" 
+                    Height="30"
+                    Click="BtnCancel_Click"
+                    IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
