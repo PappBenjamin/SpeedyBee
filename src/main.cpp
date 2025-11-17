@@ -117,9 +117,9 @@ void loop()
 void showCurrentPIDValues()
 {
   display.clearDisplay();
-  display.setTextSize(1.5);
+  display.setTextSize(1.9);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 2);
+  display.setCursor(0, 5);
   display.println("Kp: " + String(Kp));
   display.println("Kd: " + String(Kd));
   display.println("BaseSpeed: " + String(BaseSpeed));
