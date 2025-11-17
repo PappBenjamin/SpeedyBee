@@ -29,6 +29,18 @@ async def serial_push_loop():
             logger.error(f"Error in serial push loop: {e}")
         await asyncio.sleep(0.05)  # 50ms interval
 
+# read from postgres for replay
+async def postgres_replay_loop():
+    while True:
+        try:
+            result = read_postgres(limit=1)
+            if result["status"] == "ok" and result["data"]:
+                data = result["data"][0]
+                logger.info(f"Replayed IMU data from PostgreSQL: {data}")
+        except Exception as e:
+            logger.error(f"Error in postgres replay loop: {e}")
+        await asyncio.sleep(0.1)  # 100ms interval
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Start background serial reader
