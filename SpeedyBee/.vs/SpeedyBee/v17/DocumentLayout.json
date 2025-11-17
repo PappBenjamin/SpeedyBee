@@ -90,7 +90,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -110,15 +110,28 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
-              "Title": "LoadRecordingDialog.xaml.cs",
-              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Dialogs\\LoadRecordingDialog.xaml.cs",
-              "RelativeDocumentMoniker": "SpeedyBee\\Dialogs\\LoadRecordingDialog.xaml.cs",
-              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Dialogs\\LoadRecordingDialog.xaml.cs",
-              "RelativeToolTip": "SpeedyBee\\Dialogs\\LoadRecordingDialog.xaml.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKoAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 16,
+              "Title": "SaveRecordingDialog.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Dialogs\\SaveRecordingDialog.xaml.cs",
+              "RelativeDocumentMoniker": "SpeedyBee\\Dialogs\\SaveRecordingDialog.xaml.cs",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Dialogs\\SaveRecordingDialog.xaml.cs",
+              "RelativeToolTip": "SpeedyBee\\Dialogs\\SaveRecordingDialog.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T15:19:39.218Z",
+              "WhenOpened": "2025-11-17T15:19:02.189Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "RobotChoicePage.xaml",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\RobotChoicePage.xaml",
+              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\RobotChoicePage.xaml",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\RobotChoicePage.xaml",
+              "RelativeToolTip": "SpeedyBee\\Pages\\RobotChoicePage.xaml",
+              "ViewState": "AgIAAKEAAAAAAAAAAAAwwLgAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-10-26T19:42:57.682Z",
               "EditorCaption": ""
             },
             {
@@ -132,19 +145,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAIQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
               "WhenOpened": "2025-11-17T15:19:19.569Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "SaveRecordingDialog.xaml.cs",
-              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Dialogs\\SaveRecordingDialog.xaml.cs",
-              "RelativeDocumentMoniker": "SpeedyBee\\Dialogs\\SaveRecordingDialog.xaml.cs",
-              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Dialogs\\SaveRecordingDialog.xaml.cs",
-              "RelativeToolTip": "SpeedyBee\\Dialogs\\SaveRecordingDialog.xaml.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T15:19:02.189Z",
               "EditorCaption": ""
             },
             {
@@ -175,15 +175,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "RobotChoicePage.xaml",
-              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\RobotChoicePage.xaml",
-              "RelativeDocumentMoniker": "SpeedyBee\\Pages\\RobotChoicePage.xaml",
-              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Pages\\RobotChoicePage.xaml",
-              "RelativeToolTip": "SpeedyBee\\Pages\\RobotChoicePage.xaml",
-              "ViewState": "AgIAAKEAAAAAAAAAAAAwwLgAAAAHAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-10-26T19:42:57.682Z",
+              "DocumentIndex": 18,
+              "Title": "LoadRecordingDialog.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Dialogs\\LoadRecordingDialog.xaml.cs",
+              "RelativeDocumentMoniker": "SpeedyBee\\Dialogs\\LoadRecordingDialog.xaml.cs",
+              "ToolTip": "C:\\Users\\Abigel\\Documents\\work\\Egyetem\\SpeedyBee\\SpeedyBee\\SpeedyBee\\Dialogs\\LoadRecordingDialog.xaml.cs",
+              "RelativeToolTip": "SpeedyBee\\Dialogs\\LoadRecordingDialog.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T15:19:39.218Z",
               "EditorCaption": ""
             },
             {
