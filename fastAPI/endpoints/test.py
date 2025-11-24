@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from ..services.db import read_serial_to_redis, read_redis_to_postgres
-from ..services.serial import read_and_parse_imu
+from services.db import read_serial_to_redis, read_redis_to_postgres
+from services.serial import read_and_parse_imu
+
 import redis
 import logging
 
