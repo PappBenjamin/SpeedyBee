@@ -36,6 +36,8 @@ namespace SpeedyBee.Pages
         private DispatcherTimer _playbackTimer;
         private int _currentFrameIndex = 0;
         private bool _isServerRunning = false;
+        private bool _filteringEnabled = false;
+        private Queue<ImuData> _imuHistory = new Queue<ImuData>();
         private double _cameraPitch = -0.1;
         private double _cameraYaw = 0;
         private double _cameraRoll = 0;
@@ -52,6 +54,8 @@ namespace SpeedyBee.Pages
             _playbackTimer = new DispatcherTimer();
             _playbackTimer.Interval = TimeSpan.FromMilliseconds(50);
             _playbackTimer.Tick += PlaybackTimer_Tick;
+            chkEnableFiltering.Checked += (s, e) => _filteringEnabled = true;
+            chkEnableFiltering.Unchecked += (s, e) => _filteringEnabled = false;
         }
 
         private void InitializeVisualization()
@@ -256,17 +260,40 @@ namespace SpeedyBee.Pages
                 }
                 if (latestImuData != null)
                 {
-                    Dispatcher.Invoke(() => UpdateImuTransform(latestImuData));
+                    _imuHistory.Enqueue(latestImuData);
+                    while (_imuHistory.Count > 3) _imuHistory.Dequeue();
+                    ImuData filteredData = ApplyFiltering(latestImuData);
+                    Dispatcher.Invoke(() => UpdateImuTransform(filteredData));
                 }
                 if (_isRecording && latestImuData != null)
                 {
-                    _recordedData.Add(latestImuData);
+                    _recordedData.Add(latestImuData); // record raw data, or filtered? probably raw
                 }
             }
             catch (Exception ex)
             {
                 // Handle error silently
             }
+        }
+
+        private ImuData ApplyFiltering(ImuData current)
+        {
+            if (!_filteringEnabled || _imuHistory.Count < 3) return current;
+            ImuData[] history = _imuHistory.ToArray();
+            ImuData x_minus_2 = history[0];
+            ImuData x_minus_1 = history[1];
+            ImuData x = history[2];
+            return new ImuData
+            {
+                timestamp = x.timestamp,
+                accel_x = 0.2f * x.accel_x + 0.3f * x_minus_1.accel_x + 0.5f * x_minus_2.accel_x,
+                accel_y = 0.2f * x.accel_y + 0.3f * x_minus_1.accel_y + 0.5f * x_minus_2.accel_y,
+                accel_z = 0.2f * x.accel_z + 0.3f * x_minus_1.accel_z + 0.5f * x_minus_2.accel_z,
+                gyro_x = 0.2f * x.gyro_x + 0.3f * x_minus_1.gyro_x + 0.5f * x_minus_2.gyro_x,
+                gyro_y = 0.2f * x.gyro_y + 0.3f * x_minus_1.gyro_y + 0.5f * x_minus_2.gyro_y,
+                gyro_z = 0.2f * x.gyro_z + 0.3f * x_minus_1.gyro_z + 0.5f * x_minus_2.gyro_z,
+                temperature = x.temperature
+            };
         }
 
         private void UpdateImuTransform(ImuData data)
