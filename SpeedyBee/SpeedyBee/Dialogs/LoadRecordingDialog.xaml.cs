@@ -21,6 +21,7 @@ namespace SpeedyBee.Dialogs
         {
             InitializeComponent();
             _apiService = new ApiService();
+            rbLoadCsv.IsChecked = true;
         }
 
         private void LoadSource_Changed(object sender, RoutedEventArgs e)
