@@ -100,6 +100,14 @@ void IMU::begin()
      * Total:       0x708B
      */
     writeRegister16(ACC_CONF, 0x708B); // Setting accelerometer
+    // Set accelerometer bandwidth to ODR/2 for more filtering, reducing noise
+    writeRegister16(0x53, 0x01); // BW_CFG_0 = 0x01 for higher bandwidth? Wait, to reduce jumps, perhaps lower BW
+    /*
+     * Actually, 0x00 = 1456 Hz / ODR, but default is 0x00
+     * To add more filtering, since HW filter is low-pass, higher number may lower cutoff?
+     * BMI088 BW_CFG options are limited, but to reduce noise, perhaps we can leave as is or change ODR to lower.
+     */
+
     /*
      * Gyr_Conf P.93
      * mode:        0x7000  -> High
@@ -109,7 +117,7 @@ void IMU::begin()
      * ODR:         0x000B  -> 800Hz
      * Total:       0x708B
      */
-    writeRegister16(GYR_CONF, 0x708B); // Setting gyroscope
+    writeRegister16(GYR_CONF, 0x708B); // Setting gyroscope, gyro BW is fixed at ODR/2 ?
     delay(50);
 }
 
