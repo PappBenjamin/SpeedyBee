@@ -523,7 +523,7 @@ namespace SpeedyBee.Pages
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
-                    Arguments = "/c cd C:\\Users\\progenor\\code\\SpeedyBee\\fastAPI && uvicorn main:app --reload",
+                    Arguments = "/c cd C:\\Users\\progenor\\code\\SpeedyBee\\fastAPI && python run.py",
                     UseShellExecute = false,
                     CreateNoWindow = true
                 });
