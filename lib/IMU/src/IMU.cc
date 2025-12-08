@@ -6,7 +6,8 @@
 IMU::IMU()
     : x(0), y(0), z(0), gyr_x(0), gyr_y(0), gyr_z(0), temperature(0), temperatureInDegree(0.f),
       sat_x(false), sat_y(false), sat_z(false), sat_gyr_x(false), sat_gyr_y(false), sat_gyr_z(false),
-      prev_gyr_x(0), prev_gyr_y(0), prev_gyr_z(0)
+      prev_gyr_x(0), prev_gyr_y(0), prev_gyr_z(0),
+      filtering_enabled(false), filter_alpha(0.3f), filtered_gyr_x(0.0f), filtered_gyr_y(0.0f), filtered_gyr_z(0.0f)
 {
 }
 
@@ -159,6 +160,19 @@ void IMU::read()
     else
         prev_gyr_z = gyr_z;
 
+    // Apply exponential smoothing filter if enabled
+    if (filtering_enabled)
+    {
+        filtered_gyr_x = filter_alpha * (float)gyr_x + (1.0f - filter_alpha) * filtered_gyr_x;
+        filtered_gyr_y = filter_alpha * (float)gyr_y + (1.0f - filter_alpha) * filtered_gyr_y;
+        filtered_gyr_z = filter_alpha * (float)gyr_z + (1.0f - filter_alpha) * filtered_gyr_z;
+
+        // Update gyr values with filtered results
+        gyr_x = (uint16_t)filtered_gyr_x;
+        gyr_y = (uint16_t)filtered_gyr_y;
+        gyr_z = (uint16_t)filtered_gyr_z;
+    }
+
     // }
     // else
     // {
@@ -224,4 +238,23 @@ bool IMU::isGyroSatY()
 bool IMU::isGyroSatZ()
 {
     return sat_gyr_z;
+}
+
+/**
+ * @brief Enables or disables exponential smoothing filter for gyroscope data.
+ * @param enable Enable filtering if true, disable if false.
+ * @param alpha Smoothing factor (0.0-1.0), lower = more smoothing, higher = less smoothing. Default 0.3.
+ */
+void IMU::enableFiltering(bool enable, float alpha)
+{
+    filtering_enabled = enable;
+    filter_alpha = alpha;
+
+    // Reset filtered values to current raw values when enabling filtering
+    if (filtering_enabled)
+    {
+        filtered_gyr_x = (float)gyr_x;
+        filtered_gyr_y = (float)gyr_y;
+        filtered_gyr_z = (float)gyr_z;
+    }
 }

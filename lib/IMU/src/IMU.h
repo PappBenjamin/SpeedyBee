@@ -39,6 +39,13 @@ private:
     uint16_t prev_gyr_y;
     uint16_t prev_gyr_z;
 
+    // Exponential smoothing filter (optional)
+    bool filtering_enabled;
+    float filter_alpha;
+    float filtered_gyr_x;
+    float filtered_gyr_y;
+    float filtered_gyr_z;
+
     /**
      * @brief Writes a 16-bit value to a register on the IMU.
      * @param reg The register address.
@@ -111,6 +118,13 @@ public:
      * @brief Returns true if gyroscope Z-axis is saturated.
      */
     bool isGyroSatZ();
+
+    /**
+     * @brief Enables or disables exponential smoothing filter for gyroscope data.
+     * @param enable Enable filtering if true, disable if false.
+     * @param alpha Smoothing factor (0.0-1.0), lower = more smoothing, higher = less smoothing. Default 0.3.
+     */
+    void enableFiltering(bool enable, float alpha = 0.3f);
 };
 
 #endif // _IMU_H_
