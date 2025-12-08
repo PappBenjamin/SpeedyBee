@@ -196,26 +196,17 @@ namespace SpeedyBee.Pages
                 foreach (var line in File.ReadLines(csvPath))
                 {
                     var parts = line.Split(',');
-                    if (parts.Length < 6) continue;
+                    if (parts.Length < 7) continue;
 
-                    if (int.TryParse(parts[0], out int ax) &&
-                        int.TryParse(parts[1], out int ay) &&
-                        int.TryParse(parts[2], out int az) &&
-                        int.TryParse(parts[3], out int rx) &&
-                        int.TryParse(parts[4], out int ry) &&
-                        int.TryParse(parts[5], out int rz))
+                    if (float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float ax) &&
+                        float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float ay) &&
+                        float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float az) &&
+                        float.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float gx) &&
+                        float.TryParse(parts[4], NumberStyles.Float, CultureInfo.InvariantCulture, out float gy) &&
+                        float.TryParse(parts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float gz))
                     {
-                        Vector3 accel = new Vector3(
-                            (ax - 32768) / 10000f,
-                            (ay - 32768) / 10000f,
-                            (az - 32768) / 10000f
-                        );
-
-                        Vector3 rot = new Vector3(
-                            rx / 65535f * 360f,
-                            ry / 65535f * 360f,
-                            rz / 65535f * 360f
-                        );
+                        Vector3 accel = new Vector3(ax, ay, az);
+                        Vector3 rot = new Vector3(gx, gy, gz);
 
                         _frames.Add(new MotionFrame { Acceleration = accel, Rotation = rot });
                     }
@@ -271,17 +262,16 @@ namespace SpeedyBee.Pages
         private void UpdateImuTransform(ImuData data)
         {
             Vector3 acceleration = new Vector3(
-                (data.accel_x - 32768) / 10000f,
-                (data.accel_y - 32768) / 10000f,
-                (data.accel_z - 32768) / 10000f
+                data.accel_x,
+                data.accel_y,
+                data.accel_z
             );
 
-            // Convert gyro readings - these are angular velocities, not absolute angles
-            // Treating them as small incremental rotations from neutral position
+            // gyro readings are already in deg/s, treating as small angles for visualization
             Vector3 rotation = new Vector3(
-                (data.gyro_x - 32768) / 182.04f,  // Convert to degrees from center
-                (data.gyro_y - 32768) / 182.04f,
-                (data.gyro_z - 32768) / 182.04f
+                data.gyro_x,
+                data.gyro_y,
+                data.gyro_z
             );
 
             _robotTransform.Children.Clear();
@@ -620,13 +610,7 @@ namespace SpeedyBee.Pages
                     {
                         foreach (var data in _recordedData)
                         {
-                            int ax = (int)Math.Round(data.accel_x);
-                            int ay = (int)Math.Round(data.accel_y);
-                            int az = (int)Math.Round(data.accel_z);
-                            int gx = (int)Math.Round(data.gyro_x);
-                            int gy = (int)Math.Round(data.gyro_y);
-                            int gz = (int)Math.Round(data.gyro_z);
-                            writer.WriteLine($"{ax},{ay},{az},{gx},{gy},{gz}");
+                            writer.WriteLine($"{data.accel_x:F4},{data.accel_y:F4},{data.accel_z:F4},{data.gyro_x:F4},{data.gyro_y:F4},{data.gyro_z:F4},{data.temperature:F1}");
                         }
                     }
                     MessageBox.Show($"Recorded {_recordedData.Count} frames to {Path.GetFileName(dialog.FileName)}", "Recording Saved", MessageBoxButton.OK, MessageBoxImage.Information);
