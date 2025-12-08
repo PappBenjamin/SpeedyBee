@@ -2,6 +2,7 @@
 <Page x:Class="SpeedyBee.Pages.VisualizationPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:views="clr-namespace:SpeedyBee.Views"
       Title="3D Motion Visualization"
       Focusable="True"
       KeyDown="VisualizationPage_KeyDown">
@@ -19,204 +20,21 @@
                    FontWeight="Bold"
                    Margin="0,0,0,20"/>
 
-        <GroupBox Grid.Row="1" Header="Data Source" Margin="0,0,0,20">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                <RadioButton x:Name="rbRedis" Content="Redis (Real-time)" GroupName="DataSource" Margin="0,0,20,0" Checked="DataSource_Checked"/>
-                <RadioButton x:Name="rbCsv" Content="CSV File" GroupName="DataSource" Margin="0,0,20,0" Checked="DataSource_Checked"/>
-                <Button x:Name="btnSelectCsv" Content="Browse..." IsEnabled="{Binding ElementName=rbCsv, Path=IsChecked}" Click="btnSelectCsv_Click" Padding="10,5"/>
-                <Label x:Name="lblSelectedFile" Content="" Margin="10,0,0,0" VerticalAlignment="Center"/>
-            </StackPanel>
-        </GroupBox>
+        <views:DataSourcePanel Grid.Row="1" x:Name="dataSourcePanel" DataSourceChanged="DataSourcePanel_DataSourceChanged"/>
 
-        <Border Grid.Row="2"
-                Background="#1A1A1A"
-                BorderBrush="Gray"
-                BorderThickness="1"
-                Margin="0,10">
-            <Viewport3D x:Name="viewport">
-                <Viewport3D.Camera>
-                    <PerspectiveCamera x:Name="camera"
-                                     Position="0,2.4,5"
-                                     LookDirection="0,-0.4,-1"
-                                     UpDirection="0,1,0"
-                                     FieldOfView="60"/>
-                </Viewport3D.Camera>
-                
-                <!-- Lighting -->
-                <ModelVisual3D>
-                    <ModelVisual3D.Content>
-                        <DirectionalLight Color="White" Direction="-1,-1,-1"/>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-                <ModelVisual3D>
-                    <ModelVisual3D.Content>
-                        <AmbientLight Color="#404040"/>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-                
-                <!-- Robot body (yellow) -->
-                <ModelVisual3D x:Name="bodyModel">
-                    <ModelVisual3D.Content>
-                        <GeometryModel3D x:Name="bodyGeometry">
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D x:Name="bodyMesh"/>
-                            </GeometryModel3D.Geometry>
-                            <GeometryModel3D.Material>
-                                <DiffuseMaterial>
-                                    <DiffuseMaterial.Brush>
-                                        <SolidColorBrush Color="#FFE619"/>
-                                    </DiffuseMaterial.Brush>
-                                </DiffuseMaterial>
-                            </GeometryModel3D.Material>
-                        </GeometryModel3D>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-
-                <!-- Robot head (red top part) -->
-                <ModelVisual3D x:Name="headModel">
-                    <ModelVisual3D.Content>
-                        <GeometryModel3D x:Name="headGeometry">
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D x:Name="headMesh"/>
-                            </GeometryModel3D.Geometry>
-                            <GeometryModel3D.Material>
-                                <DiffuseMaterial>
-                                    <DiffuseMaterial.Brush>
-                                        <SolidColorBrush Color="Red"/>
-                                    </DiffuseMaterial.Brush>
-                                </DiffuseMaterial>
-                            </GeometryModel3D.Material>
-                        </GeometryModel3D>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-
-                <!-- Ground plane -->
-                <ModelVisual3D>
-                    <ModelVisual3D.Content>
-                        <GeometryModel3D>
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D
-                                    Positions="-5,-0.01,-5 5,-0.01,-5 5,-0.01,5 -5,-0.01,5"
-                                    TriangleIndices="0,2,1 0,3,2"/>
-                            </GeometryModel3D.Geometry>
-                            <GeometryModel3D.Material>
-                                <DiffuseMaterial>
-                                    <DiffuseMaterial.Brush>
-                                        <SolidColorBrush Color="#404040" Opacity="0.5"/>
-                                    </DiffuseMaterial.Brush>
-                                </DiffuseMaterial>
-                            </GeometryModel3D.Material>
-                        </GeometryModel3D>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-
-                <!-- Coordinate axes -->
-                <!-- X-axis (Red) -->
-                <ModelVisual3D>
-                    <ModelVisual3D.Content>
-                        <GeometryModel3D>
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D
-                                    Positions="0,0,0 2,0,0 2,0.02,0 0,0.02,0 0,0,0.02 2,0,0.02 2,0.02,0.02 0,0.02,0.02"
-                                    TriangleIndices="0,1,2 0,2,3 4,6,5 4,7,6 0,4,5 0,5,1 1,5,6 1,6,2 2,6,7 2,7,3 3,7,4 3,4,0"/>
-                            </GeometryModel3D.Geometry>
-                            <GeometryModel3D.Material>
-                                <DiffuseMaterial>
-                                    <DiffuseMaterial.Brush>
-                                        <SolidColorBrush Color="Red"/>
-                                    </DiffuseMaterial.Brush>
-                                </DiffuseMaterial>
-                            </GeometryModel3D.Material>
-                        </GeometryModel3D>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-
-                <!-- Y-axis (Green) -->
-                <ModelVisual3D>
-                    <ModelVisual3D.Content>
-                        <GeometryModel3D>
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D
-                                    Positions="0,0,0 0,2,0 0.02,2,0 0.02,0,0 0,0,0.02 0,2,0.02 0.02,2,0.02 0.02,0,0.02"
-                                    TriangleIndices="0,1,2 0,2,3 4,6,5 4,7,6 0,4,5 0,5,1 1,5,6 1,6,2 2,6,7 2,7,3 3,7,4 3,4,0"/>
-                            </GeometryModel3D.Geometry>
-                            <GeometryModel3D.Material>
-                                <DiffuseMaterial>
-                                    <DiffuseMaterial.Brush>
-                                        <SolidColorBrush Color="Green"/>
-                                    </DiffuseMaterial.Brush>
-                                </DiffuseMaterial>
-                            </GeometryModel3D.Material>
-                        </GeometryModel3D>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-
-                <!-- Z-axis (Blue) -->
-                <ModelVisual3D>
-                    <ModelVisual3D.Content>
-                        <GeometryModel3D>
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D
-                                    Positions="0,0,0 0,0,2 0,0.02,2 0,0.02,0 0.02,0,0 0.02,0,2 0.02,0.02,2 0.02,0.02,0"
-                                    TriangleIndices="0,1,2 0,2,3 4,6,5 4,7,6 0,4,5 0,5,1 1,5,6 1,6,2 2,6,7 2,7,3 3,7,4 3,4,0"/>
-                            </GeometryModel3D.Geometry>
-                            <GeometryModel3D.Material>
-                                <DiffuseMaterial>
-                                    <DiffuseMaterial.Brush>
-                                        <SolidColorBrush Color="Blue"/>
-                                    </DiffuseMaterial.Brush>
-                                </DiffuseMaterial>
-                            </GeometryModel3D.Material>
-                        </GeometryModel3D>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-            </Viewport3D>
-        </Border>
+        <views:VisualizationViewport Grid.Row="2" x:Name="visualizationViewport"/>
 
         <StackPanel Grid.Row="3"
                     Orientation="Vertical"
                     HorizontalAlignment="Center"
                     Margin="0,20,0,0">
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <Button x:Name="btnStart"
-                        Content="Start"
-                        Click="BtnStart_Click"
-                        Margin="5"
-                        Padding="15,5"
-                        Width="100"/>
-                <Button x:Name="btnPause"
-                        Content="Pause"
-                        Click="BtnPause_Click"
-                        Margin="5"
-                        Padding="15,5"
-                        Width="100"
-                        IsEnabled="False"/>
-                <Button x:Name="btnReset"
-                        Content="Reset"
-                        Click="BtnReset_Click"
-                        Margin="5"
-                        Padding="15,5"
-                        Width="100"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center"
-                        Margin="0,10,0,0">
-                <Button x:Name="btnRecordStart"
-                        Content="Start Recording"
-                        Click="BtnRecordStart_Click"
-                        Margin="5"
-                        Padding="15,5"
-                        Width="120"
-                        IsEnabled="False"/>
-                <Button x:Name="btnRecordStop"
-                        Content="Stop Recording"
-                        Click="BtnRecordStop_Click"
-                        Margin="5"
-                        Padding="15,5"
-                        Width="120"
-                        IsEnabled="False"/>
-            </StackPanel>
+            <views:PlaybackControls x:Name="playbackControls"
+                                    Start="PlaybackControls_Start"
+                                    Pause="PlaybackControls_Pause"
+                                    Reset="PlaybackControls_Reset"/>
+            <views:RecordingControls x:Name="recordingControls"
+                                     StartRecording="RecordingControls_StartRecording"
+                                     StopRecording="RecordingControls_StopRecording"/>
         </StackPanel>
     </Grid>
 </Page>
