@@ -40,6 +40,8 @@ namespace SpeedyBee.Pages
         private double _cameraRoll = 0;
         private const double CameraRotationSpeed = 0.05;
         private const double CameraMovementSpeed = 0.2;
+        private Vector3 _accumulatedRotation = Vector3.Zero;
+        private Vector3 _accumulatedPosition = Vector3.Zero;
 
         public VisualizationPage()
         {
@@ -270,28 +272,33 @@ namespace SpeedyBee.Pages
             // gyro readings are already in deg/s, treating as small angles for visualization
             // Apply sensitivity reduction and invert Y axis for correct up/down orientation
             const float SensitivityFactor = 3.0f;
+            const float PositionSensitivityFactor = 0.01f; // Scale factor for position accumulation
             Vector3 rotation = new Vector3(
                 data.gyro_x / SensitivityFactor,
-                data.gyro_y / SensitivityFactor,  // Invert Y for correct orientation
+                -data.gyro_y / SensitivityFactor,  // Invert Y for correct orientation
                 data.gyro_z / SensitivityFactor
             );
 
+            // Accumulate rotation and position over time
+            _accumulatedRotation += rotation;
+            _accumulatedPosition += acceleration * PositionSensitivityFactor;
+
             _robotTransform.Children.Clear();
 
-            // Step 1: Center the model
-            // _robotTransform.Children.Add(new TranslateTransform3D(
-            //     -_modelCenter.X,
-            //     -_modelCenter.Y,
-            //     -_modelCenter.Z
-            // ));
+            // Step 1: Center the model at origin
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                -_modelCenter.X,
+                -_modelCenter.Y,
+                -_modelCenter.Z
+            ));
 
-            // Step 2: Apply motion rotations (small rotations from neutral)
+            // Step 2: Apply accumulated motion rotations
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.Y)));
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), _accumulatedRotation.Y)));
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 1, 0), -rotation.X)));
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), -_accumulatedRotation.X)));
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z)));
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), _accumulatedRotation.Z)));
 
             // Step 3: Apply base orientation (robot facing forward along X-axis, laying flat)
             _robotTransform.Children.Add(new RotateTransform3D(
@@ -301,11 +308,11 @@ namespace SpeedyBee.Pages
             // Step 4: Scale down
             _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
 
-            // Step 5: Apply translation
+            // Step 5: Apply accumulated translation
             _robotTransform.Children.Add(new TranslateTransform3D(
-                acceleration.X,
-                acceleration.Y + 0.4,
-                acceleration.Z
+                _accumulatedPosition.X,
+                _accumulatedPosition.Y + 0.4,
+                _accumulatedPosition.Z
             ));
         }
 
@@ -566,6 +573,10 @@ namespace SpeedyBee.Pages
                 _playbackTimer.Stop();
                 _currentFrameIndex = 0;
             }
+
+            // Reset accumulated state
+            _accumulatedRotation = Vector3.Zero;
+            _accumulatedPosition = Vector3.Zero;
 
             ApplyBaseTransform();
             camera.Position = new Point3D(0, 2.4, 5);
