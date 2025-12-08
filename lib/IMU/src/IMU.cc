@@ -1,260 +1,251 @@
 #include "IMU.h"
 
 /**
- * @brief Constructs an IMU object and initializes sensor values to zero.
+ * @brief Constructs an IMU object with default I2C address.
  */
-IMU::IMU()
-    : x(0), y(0), z(0), gyr_x(0), gyr_y(0), gyr_z(0), temperature(0), temperatureInDegree(0.f),
-      sat_x(false), sat_y(false), sat_z(false), sat_gyr_x(false), sat_gyr_y(false), sat_gyr_z(false),
-      prev_gyr_x(0), prev_gyr_y(0), prev_gyr_z(0),
-      filtering_enabled(false), filter_alpha(0.3f), filtered_gyr_x(0.0f), filtered_gyr_y(0.0f), filtered_gyr_z(0.0f)
+IMU::IMU() : ax(0.0f), ay(0.0f), az(0.0f), gx(0.0f), gy(0.0f), gz(0.0f), temp(0.0f), bmi323_i2c_addr(BMI323_I2C_ADDR_1) {}
+
+/**
+ * @brief Initializes the IMU and configures accelerometer/gyroscope.
+ * @return True if initialization successful, false otherwise.
+ */
+bool IMU::begin()
 {
+    return initBMI323();
 }
 
 /**
- * @brief Writes a 16-bit value to a register on the IMU.
- * @param reg The register address.
- * @param value The 16-bit value to write.
+ * @brief Initializes the BMI323 IMU.
+ * @return True if initialization successful, false otherwise.
  */
-void IMU::writeRegister16(uint16_t reg, uint16_t value)
+bool IMU::initBMI323()
 {
-    Wire.beginTransmission(INC_ADDRESS);
-    Wire.write(reg);
-    // Low
-    Wire.write((uint16_t)value & 0xff);
-    // High
-    Wire.write((uint16_t)value >> 8);
-    Wire.endTransmission();
+    // Try both possible I2C addresses
+    Serial.print("Testing I2C address 0x");
+    Serial.println(BMI323_I2C_ADDR_1, HEX);
+    uint16_t chipID = readRegister16(CHIP_ID_REG, BMI323_I2C_ADDR_1);
+    if ((chipID & 0xFF) == 0x43 || (chipID & 0xFF) == 0x41)
+    {
+        bmi323_i2c_addr = BMI323_I2C_ADDR_1;
+        Serial.println("Found BMI323 at address 0x68");
+    }
+    else
+    {
+        Serial.print("Invalid chip ID: 0x");
+        Serial.println(chipID, HEX);
+        return false;
+    }
+
+    // Reset sensor
+    Serial.println("Performing soft reset...");
+    writeRegister16(CMD_REG, SOFT_RESET_CMD);
+    delay(5); // Wait for reset (datasheet: ~2ms)
+
+    // Set up feature engine
+    Serial.println("Initializing feature engine...");
+    if (!initializeFeatureEngine())
+    {
+        Serial.println("Feature engine setup failed");
+        return false;
+    }
+
+    // Configure accelerometer and gyroscope
+    Serial.println("Configuring accelerometer and gyroscope...");
+    writeRegister16(ACC_CONF_REG, ACC_CONF_NORMAL_100HZ_8G);
+    writeRegister16(GYR_CONF_REG, GYR_CONF_NORMAL_100HZ_2000DPS);
+    delay(50); // Wait for configuration to settle
+
+    return true;
+}
+
+/**
+ * @brief Initializes the feature engine on the BMI323.
+ * @return True if successful, false otherwise.
+ */
+bool IMU::initializeFeatureEngine()
+{
+    // Clear feature config
+    writeRegister16(FEATURE_IO0_REG, 0x0000);
+    delay(1);
+
+    // Set startup config
+    writeRegister16(FEATURE_IO2_REG, 0x012C);
+    delay(1);
+
+    // Trigger startup
+    writeRegister16(FEATURE_IO_STATUS_REG, 0x0001);
+    delay(1);
+
+    // Enable feature engine
+    writeRegister16(FEATURE_CTRL_REG, 0x0001);
+    delay(10);
+
+    // Check feature engine status
+    int timeout = 0;
+    uint16_t featureIO1Status;
+    do
+    {
+        delay(10);
+        featureIO1Status = readRegister16(FEATURE_IO1_REG);
+        uint8_t errorStatus = featureIO1Status & 0x0F;
+        if (errorStatus == 0x01)
+        {
+            Serial.println("Feature engine initialized successfully");
+            return true;
+        }
+        if (errorStatus == 0x03)
+        {
+            Serial.println("Feature engine error");
+            return false;
+        }
+        timeout++;
+    } while ((featureIO1Status & 0x0F) == 0x00 && timeout < 50);
+
+    Serial.println("Feature engine timeout");
+    return false;
 }
 
 /**
  * @brief Reads a 16-bit value from a register on the IMU.
  * @param reg The register address.
+ * @param addr I2C address (uses bmi323_i2c_addr if 0).
  * @return The 16-bit value read from the register.
  */
-uint16_t IMU::readRegister16(uint8_t reg)
+uint16_t IMU::readRegister16(uint8_t reg, uint8_t addr)
 {
-    Wire.beginTransmission(INC_ADDRESS);
+    if (addr == 0)
+        addr = bmi323_i2c_addr;
+    Wire.beginTransmission(addr);
     Wire.write(reg);
-    Wire.endTransmission(false);
-    int n = Wire.requestFrom(INC_ADDRESS, 4);
-    uint16_t data[4] = {0};
-    int i = 0;
-    while (Wire.available() && i < 4)
+    int error = Wire.endTransmission(false); // Restart
+    if (error != 0)
     {
-        data[i] = Wire.read();
-        i++;
-    }
-    return (data[3] | data[2] << 8);
-}
-
-/**
- * @brief Reads all accelerometer, gyroscope, and temperature data from the IMU.
- *        Updates the corresponding member variables.
- */
-void IMU::readAllAccel()
-{
-    Wire.beginTransmission(INC_ADDRESS);
-    Wire.write(0x03);
-    Wire.endTransmission();
-    Wire.requestFrom(INC_ADDRESS, 20);
-    uint16_t data[20] = {0};
-    int i = 0;
-    while (Wire.available() && i < 20)
-    {
-        data[i] = Wire.read();
-        i++;
+        Serial.print("I2C write error: ");
+        Serial.println(error);
+        return 0xFFFF;
     }
 
-    // Offset = 2 because the 2 first bytes are dummy (useless)
-    int offset = 2;
-    x = (data[offset + 0] | (uint16_t)data[offset + 1] << 8);             // 0x03
-    y = (data[offset + 2] | (uint16_t)data[offset + 3] << 8);             // 0x04
-    z = (data[offset + 4] | (uint16_t)data[offset + 5] << 8);             // 0x05
-    gyr_x = (data[offset + 6] | (uint16_t)data[offset + 7] << 8);         // 0x06
-    gyr_y = (data[offset + 8] | (uint16_t)data[offset + 9] << 8);         // 0x07
-    gyr_z = (data[offset + 10] | (uint16_t)data[offset + 11] << 8);       // 0x08
-    temperature = (data[offset + 12] | (uint16_t)data[offset + 13] << 8); // 0x09
-    temperatureInDegree = (temperature / 512.f) + 23.0f;
+    // Request 4 bytes: 2 dummy bytes + 2 data bytes (LSB, MSB)
+    Wire.requestFrom(addr, (uint8_t)4);
+    if (Wire.available() < 4)
+    {
+        Serial.println("I2C read error: Not enough bytes");
+        return 0xFFFF;
+    }
 
-    // Read saturation flags
-    readSatFlags();
+    // Discard dummy bytes
+    Wire.read(); // Dummy byte 1
+    Wire.read(); // Dummy byte 2
+    uint8_t lsb = Wire.read();
+    uint8_t msb = Wire.read();
+    return (msb << 8) | lsb;
 }
 
 /**
- * @brief Reads saturation flags from the IMU.
+ * @brief Writes a 16-bit value to a register on the IMU.
+ * @param reg The register address.
+ * @param data The 16-bit value to write.
  */
-void IMU::readSatFlags()
+void IMU::writeRegister16(uint8_t reg, uint16_t data)
 {
-    uint16_t flags = readRegister16(SAT_FLAGS);
-    sat_x = flags & 0x01;
-    sat_y = flags & 0x02;
-    sat_z = flags & 0x04;
-    sat_gyr_x = flags & 0x08;
-    sat_gyr_y = flags & 0x10;
-    sat_gyr_z = flags & 0x20;
+    Wire.beginTransmission(bmi323_i2c_addr);
+    Wire.write(reg);
+    Wire.write(data & 0xFF);        // LSB
+    Wire.write((data >> 8) & 0xFF); // MSB
+    int error = Wire.endTransmission();
+    if (error != 0)
+    {
+        Serial.print("I2C write error: ");
+        Serial.println(error);
+    }
 }
 
 /**
- * @brief Performs a software reset of the IMU.
+ * @brief Converts accelerometer raw data to g units.
+ * @param rawData The raw 16-bit accelerometer data.
+ * @return Value in g, or NAN if invalid.
  */
-void IMU::softReset()
+float IMU::convertAccelData(uint16_t rawData)
 {
-    writeRegister16(CMD, 0xDEAF);
-    delay(50);
+    int16_t signedData = (int16_t)rawData;
+    if (signedData == -32768)
+        return NAN;
+    return signedData / ACC_RANGE_LSB_PER_G;
 }
 
 /**
- * @brief Initializes the IMU by performing a soft reset and configuring the accelerometer and gyroscope.
+ * @brief Converts gyroscope raw data to deg/s units.
+ * @param rawData The raw 16-bit gyroscope data.
+ * @return Value in deg/s, or NAN if invalid.
  */
-void IMU::begin()
+float IMU::convertGyroData(uint16_t rawData)
 {
-    softReset();
-    /*
-     * Acc_Conf P.91
-     * mode:        0x7000  -> High
-     * average:     0x0600  -> No
-     * filtering:   0x0080  -> ODR/4
-     * range:       0x0000  -> 2G
-     * ODR:         0x000B  -> 800Hz
-     * Total:       0x768B
-     */
-    writeRegister16(ACC_CONF, 0x768B); // Setting accelerometer
-    /*
-     * Gyr_Conf P.93
-     * mode:        0x7000  -> High
-     * average:     0x0600  -> No
-     * filtering:   0x0020  -> ODR/2 (improved filtering for reduced jumps)
-     * range:       0x0040  -> ±2000dps
-     * ODR:         0x000B  -> 800Hz
-     * Total:       0x762B
-     */
-    writeRegister16(GYR_CONF, 0x762B); // Setting gyroscope (improved filtering)
-    delay(50);
+    int16_t signedData = (int16_t)rawData;
+    if (signedData == -32768)
+        return NAN;
+    return signedData / GYR_RANGE_LSB_PER_DPS;
 }
 
 /**
- * @brief Reads all sensor data from the IMU and updates member variables.
+ * @brief Converts temperature raw data to Celsius.
+ * @param rawData The raw 16-bit temperature data.
+ * @return Value in C, or NAN if invalid.
+ */
+float IMU::convertTempData(uint16_t rawData)
+{
+    int16_t signedData = (int16_t)rawData;
+    if (signedData == -32768)
+        return NAN;
+    return (signedData / 512.0) + 23.0;
+}
+
+/**
+ * @brief Reads all sensor data and converts to physical units.
  */
 void IMU::read()
 {
+    // Read sensor data
+    uint16_t accX = readRegister16(ACC_DATA_X_REG);
+    uint16_t accY = readRegister16(ACC_DATA_Y_REG);
+    uint16_t accZ = readRegister16(ACC_DATA_Z_REG);
+    uint16_t gyrX = readRegister16(GYR_DATA_X_REG);
+    uint16_t gyrY = readRegister16(GYR_DATA_Y_REG);
+    uint16_t gyrZ = readRegister16(GYR_DATA_Z_REG);
+    uint16_t tempRaw = readRegister16(TEMP_DATA_REG);
 
-    // if (readRegister16(0x02) == 0x00)
-    // {
-    // Read ChipID
-    // Serial.print("ChipID:");
-    // Serial.print(readRegister16(0x00));
-    readAllAccel(); // read all accelerometer/gyroscope/temperature data
-
-    // Apply saturation clamping to prevent gyro jumps during fast rotations
-    if (sat_gyr_x)
-        gyr_x = prev_gyr_x;
-    else
-        prev_gyr_x = gyr_x;
-    if (sat_gyr_y)
-        gyr_y = prev_gyr_y;
-    else
-        prev_gyr_y = gyr_y;
-    if (sat_gyr_z)
-        gyr_z = prev_gyr_z;
-    else
-        prev_gyr_z = gyr_z;
-
-    // Apply exponential smoothing filter if enabled
-    if (filtering_enabled)
-    {
-        filtered_gyr_x = filter_alpha * (float)gyr_x + (1.0f - filter_alpha) * filtered_gyr_x;
-        filtered_gyr_y = filter_alpha * (float)gyr_y + (1.0f - filter_alpha) * filtered_gyr_y;
-        filtered_gyr_z = filter_alpha * (float)gyr_z + (1.0f - filter_alpha) * filtered_gyr_z;
-
-        // Update gyr values with filtered results
-        gyr_x = (uint16_t)filtered_gyr_x;
-        gyr_y = (uint16_t)filtered_gyr_y;
-        gyr_z = (uint16_t)filtered_gyr_z;
-    }
-
-    // }
-    // else
-    // {
-    //     Serial.println("No Data");
-    // }
+    // Convert to physical units
+    ax = convertAccelData(accX);
+    ay = convertAccelData(accY);
+    az = convertAccelData(accZ);
+    gx = convertGyroData(gyrX);
+    gy = convertGyroData(gyrY);
+    gz = convertGyroData(gyrZ);
+    temp = convertTempData(tempRaw);
 }
 
 /**
- * @brief Prints the current sensor data to the serial output in CSV format.
+ * @brief Prints the current sensor data to serial in CSV format.
+ * Output format: ax,ay,az,gx,gy,gz,temp
+ * Units: g,g,g,deg/s,deg/s,deg/s,C
  */
 void IMU::printData()
 {
-    // Serial.print(" \tx:");
-    Serial.print(x);
-    // Serial.print(" \ty:");
-    Serial.print(",");
-
-    Serial.print(y);
-    // Serial.print(" \tz:");
-    Serial.print(",");
-    Serial.print(z);
-    // Serial.print(" \tgyr_x:");
-    Serial.print(",");
-    Serial.print(gyr_x);
-    // Serial.print(" \tgyr_y:");
-    Serial.print(",");
-    Serial.print(gyr_y);
-    // Serial.print(" \tgyr_z:");
-    Serial.print(",");
-    Serial.println(gyr_z);
-    // Serial.print(" \ttemp:");
-    // Serial.print("\t");
-    // Serial.println(temperatureInDegree);
-}
-
-/**
- * @brief Returns true if accelerometer X-axis is saturated.
- */
-bool IMU::isAccelSatX()
-{
-    return sat_x;
-}
-
-/**
- * @brief Returns true if gyroscope X-axis is saturated.
- */
-bool IMU::isGyroSatX()
-{
-    return sat_gyr_x;
-}
-
-/**
- * @brief Returns true if gyroscope Y-axis is saturated.
- */
-bool IMU::isGyroSatY()
-{
-    return sat_gyr_y;
-}
-
-/**
- * @brief Returns true if gyroscope Z-axis is saturated.
- */
-bool IMU::isGyroSatZ()
-{
-    return sat_gyr_z;
-}
-
-/**
- * @brief Enables or disables exponential smoothing filter for gyroscope data.
- * @param enable Enable filtering if true, disable if false.
- * @param alpha Smoothing factor (0.0-1.0), lower = more smoothing, higher = less smoothing. Default 0.3.
- */
-void IMU::enableFiltering(bool enable, float alpha)
-{
-    filtering_enabled = enable;
-    filter_alpha = alpha;
-
-    // Reset filtered values to current raw values when enabling filtering
-    if (filtering_enabled)
+    // Print valid data in CSV format
+    if (!isnan(ax) && !isnan(ay) && !isnan(az) &&
+        !isnan(gx) && !isnan(gy) && !isnan(gz))
     {
-        filtered_gyr_x = (float)gyr_x;
-        filtered_gyr_y = (float)gyr_y;
-        filtered_gyr_z = (float)gyr_z;
+        Serial.print(ax, 3);
+        Serial.print(",");
+        Serial.print(ay, 3);
+        Serial.print(",");
+        Serial.print(az, 3);
+        Serial.print(",");
+        Serial.print(gx, 2);
+        Serial.print(",");
+        Serial.print(gy, 2);
+        Serial.print(",");
+        Serial.print(gz, 2);
+        Serial.print(",");
+        Serial.println(isnan(temp) ? "NAN" : String(temp, 1));
     }
 }
