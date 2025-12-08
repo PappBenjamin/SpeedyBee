@@ -93,23 +93,23 @@ void IMU::begin()
     /*
      * Acc_Conf P.91
      * mode:        0x7000  -> High
-     * average:     0x0000  -> No
+     * average:     0x0600  -> No
      * filtering:   0x0080  -> ODR/4
      * range:       0x0000  -> 2G
      * ODR:         0x000B  -> 800Hz
-     * Total:       0x708B
+     * Total:       0x768B
      */
-    writeRegister16(ACC_CONF, 0x708B); // Setting accelerometer
+    writeRegister16(ACC_CONF, 0x768B); // Setting accelerometer
     /*
      * Gyr_Conf P.93
      * mode:        0x7000  -> High
-     * average:     0x0000  -> No
+     * average:     0x0600  -> No
      * filtering:   0x0080  -> ODR/4
      * range:       0x0000  -> 125kdps
      * ODR:         0x000B  -> 800Hz
-     * Total:       0x708B
+     * Total:       0x768B
      */
-    writeRegister16(GYR_CONF, 0x708B); // Setting gyroscope
+    writeRegister16(GYR_CONF, 0x768B); // Setting gyroscope
     delay(50);
 }
 
