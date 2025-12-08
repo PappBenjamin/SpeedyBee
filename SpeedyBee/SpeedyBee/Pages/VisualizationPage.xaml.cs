@@ -272,16 +272,24 @@ namespace SpeedyBee.Pages
             // gyro readings are already in deg/s, treating as small angles for visualization
             // Apply sensitivity reduction and invert Y axis for correct up/down orientation
             const float SensitivityFactor = 3.0f;
-            const float PositionSensitivityFactor = 0.01f; // Scale factor for position accumulation
+            const float PositionSensitivityFactor = 1f; // Scale factor for position accumulation
+            const float AccelerationThreshold = 2f; // Deadzone threshold for acceleration
             Vector3 rotation = new Vector3(
                 data.gyro_x / SensitivityFactor,
                 -data.gyro_y / SensitivityFactor,  // Invert Y for correct orientation
                 data.gyro_z / SensitivityFactor
             );
 
+            // Apply threshold to acceleration to filter out noise
+            Vector3 filteredAcceleration = new Vector3(
+                Math.Abs(acceleration.X) > AccelerationThreshold ? acceleration.X : 0.0f,
+                Math.Abs(acceleration.Y) > AccelerationThreshold ? acceleration.Y : 0.0f,
+                Math.Abs(acceleration.Z) > AccelerationThreshold ? acceleration.Z : 0.0f
+            );
+
             // Accumulate rotation and position over time
             _accumulatedRotation += rotation;
-            _accumulatedPosition += acceleration * PositionSensitivityFactor;
+            _accumulatedPosition += filteredAcceleration * PositionSensitivityFactor;
 
             _robotTransform.Children.Clear();
 
