@@ -78,6 +78,7 @@ void setup()
   // IMU
   displayPrint("IMU init");
   imu.begin();
+  imu.enableFiltering(true, 0.3f);
 
   displayPrint("Setup done!");
 

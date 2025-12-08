@@ -41,6 +41,8 @@ namespace SpeedyBee.Pages
         private double _cameraRoll = 0;
         private const double CameraRotationSpeed = 0.05;
         private const double CameraMovementSpeed = 0.2;
+        private Vector3 _accumulatedRotation = Vector3.Zero;
+        private Vector3 _accumulatedPosition = Vector3.Zero;
 
         public VisualizationPage()
         {
@@ -197,26 +199,17 @@ namespace SpeedyBee.Pages
                 foreach (var line in File.ReadLines(csvPath))
                 {
                     var parts = line.Split(',');
-                    if (parts.Length < 6) continue;
+                    if (parts.Length < 7) continue;
 
-                    if (int.TryParse(parts[0], out int ax) &&
-                        int.TryParse(parts[1], out int ay) &&
-                        int.TryParse(parts[2], out int az) &&
-                        int.TryParse(parts[3], out int rx) &&
-                        int.TryParse(parts[4], out int ry) &&
-                        int.TryParse(parts[5], out int rz))
+                    if (float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float ax) &&
+                        float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float ay) &&
+                        float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float az) &&
+                        float.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float gx) &&
+                        float.TryParse(parts[4], NumberStyles.Float, CultureInfo.InvariantCulture, out float gy) &&
+                        float.TryParse(parts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float gz))
                     {
-                        Vector3 accel = new Vector3(
-                            (ax - 32768) / 10000f,
-                            (ay - 32768) / 10000f,
-                            (az - 32768) / 10000f
-                        );
-
-                        Vector3 rot = new Vector3(
-                            rx / 65535f * 360f,
-                            ry / 65535f * 360f,
-                            rz / 65535f * 360f
-                        );
+                        Vector3 accel = new Vector3(ax, ay, az);
+                        Vector3 rot = new Vector3(gx, gy, gz);
 
                         _frames.Add(new MotionFrame { Acceleration = accel, Rotation = rot });
                     }
@@ -272,35 +265,49 @@ namespace SpeedyBee.Pages
         private void UpdateImuTransform(ImuData data)
         {
             Vector3 acceleration = new Vector3(
-                (data.accel_x - 32768) / 10000f,
-                (data.accel_y - 32768) / 10000f,
-                (data.accel_z - 32768) / 10000f
+                data.accel_x,
+                data.accel_y,
+                data.accel_z
             );
 
-            // Convert gyro readings - these are angular velocities, not absolute angles
-            // Treating them as small incremental rotations from neutral position
+            // gyro readings are already in deg/s, treating as small angles for visualization
+            // Apply sensitivity reduction and invert Y axis for correct up/down orientation
+            const float SensitivityFactor = 3.0f;
+            const float PositionSensitivityFactor = 1f; // Scale factor for position accumulation
+            const float AccelerationThreshold = 2f; // Deadzone threshold for acceleration
             Vector3 rotation = new Vector3(
-                (data.gyro_x - 32768) / 182.04f,  // Convert to degrees from center
-                (data.gyro_y - 32768) / 182.04f,
-                (data.gyro_z - 32768) / 182.04f
+                data.gyro_x / SensitivityFactor,
+                -data.gyro_y / SensitivityFactor,  // Invert Y for correct orientation
+                data.gyro_z / SensitivityFactor
             );
+
+            // Apply threshold to acceleration to filter out noise
+            Vector3 filteredAcceleration = new Vector3(
+                Math.Abs(acceleration.X) > AccelerationThreshold ? acceleration.X : 0.0f,
+                Math.Abs(acceleration.Y) > AccelerationThreshold ? acceleration.Y : 0.0f,
+                Math.Abs(acceleration.Z) > AccelerationThreshold ? acceleration.Z : 0.0f
+            );
+
+            // Accumulate rotation and position over time
+            _accumulatedRotation += rotation;
+            _accumulatedPosition += filteredAcceleration * PositionSensitivityFactor;
 
             _robotTransform.Children.Clear();
 
-            // Step 1: Center the model
-            // _robotTransform.Children.Add(new TranslateTransform3D(
-            //     -_modelCenter.X,
-            //     -_modelCenter.Y,
-            //     -_modelCenter.Z
-            // ));
+            // Step 1: Center the model at origin
+            _robotTransform.Children.Add(new TranslateTransform3D(
+                -_modelCenter.X,
+                -_modelCenter.Y,
+                -_modelCenter.Z
+            ));
 
-            // Step 2: Apply motion rotations (small rotations from neutral)
+            // Step 2: Apply accumulated motion rotations
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(1, 0, 0), rotation.Y)));
+                new AxisAngleRotation3D(new Vector3D(1, 0, 0), _accumulatedRotation.Y)));
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 1, 0), -rotation.X)));
+                new AxisAngleRotation3D(new Vector3D(0, 1, 0), -_accumulatedRotation.X)));
             _robotTransform.Children.Add(new RotateTransform3D(
-                new AxisAngleRotation3D(new Vector3D(0, 0, 1), rotation.Z)));
+                new AxisAngleRotation3D(new Vector3D(0, 0, 1), _accumulatedRotation.Z)));
 
             // Step 3: Apply base orientation (robot facing forward along X-axis, laying flat)
             _robotTransform.Children.Add(new RotateTransform3D(
@@ -310,11 +317,11 @@ namespace SpeedyBee.Pages
             // Step 4: Scale down
             _robotTransform.Children.Add(new ScaleTransform3D(0.1, 0.1, 0.1));
 
-            // Step 5: Apply translation
+            // Step 5: Apply accumulated translation
             _robotTransform.Children.Add(new TranslateTransform3D(
-                acceleration.X,
-                acceleration.Y + 0.4,
-                acceleration.Z
+                _accumulatedPosition.X,
+                _accumulatedPosition.Y + 0.4,
+                _accumulatedPosition.Z
             ));
         }
 
@@ -615,6 +622,10 @@ namespace SpeedyBee.Pages
                 _playbackTimer.Stop();
                 _currentFrameIndex = 0;
             }
+
+            // Reset accumulated state
+            _accumulatedRotation = Vector3.Zero;
+            _accumulatedPosition = Vector3.Zero;
 
             ApplyBaseTransform();
             camera.Position = new Point3D(0, 2.4, 5);
