@@ -268,10 +268,12 @@ namespace SpeedyBee.Pages
             );
 
             // gyro readings are already in deg/s, treating as small angles for visualization
+            // Apply sensitivity reduction and invert Y axis for correct up/down orientation
+            const float SensitivityFactor = 3.0f;
             Vector3 rotation = new Vector3(
-                data.gyro_x,
-                data.gyro_y,
-                data.gyro_z
+                data.gyro_x / SensitivityFactor,
+                data.gyro_y / SensitivityFactor,  // Invert Y for correct orientation
+                data.gyro_z / SensitivityFactor
             );
 
             _robotTransform.Children.Clear();
