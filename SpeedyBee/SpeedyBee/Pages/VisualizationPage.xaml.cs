@@ -15,6 +15,7 @@ using Microsoft.Win32;
 using OpenTK.Mathematics;
 using StackExchange.Redis;
 using SpeedyBee.Views;
+using SpeedyBee.ViewModels;
 
 namespace SpeedyBee.Pages
 {
@@ -60,7 +61,7 @@ namespace SpeedyBee.Pages
                 foreach (var line in File.ReadLines(csvPath))
                 {
                     var parts = line.Split(',');
-                    if (parts.Length < 7) continue;
+                    if (parts.Length < 6) continue;
 
                     if (float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float ax) &&
                         float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float ay) &&
@@ -358,18 +359,5 @@ namespace SpeedyBee.Pages
             public Vector3 Acceleration { get; set; }
             public Vector3 Rotation { get; set; }
         }
-
-        
-    }
-     public class ImuData
-    {
-        public string? timestamp { get; set; }
-        public float accel_x { get; set; }
-        public float accel_y { get; set; }
-        public float accel_z { get; set; }
-        public float gyro_x { get; set; }
-        public float gyro_y { get; set; }
-        public float gyro_z { get; set; }
-        public float temperature { get; set; }
     }
 }

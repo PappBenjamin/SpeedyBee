@@ -5,8 +5,10 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using OpenTK.Mathematics;
+using SpeedyBee.ViewModels;
 
 namespace SpeedyBee.Views
 {
