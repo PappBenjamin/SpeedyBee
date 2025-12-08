@@ -77,8 +77,12 @@ void setup()
 
   // IMU
   displayPrint("IMU init");
-  imu.begin();
-  imu.enableFiltering(true, 0.3f);
+  if (!imu.begin())
+  {
+    Serial.println("BMI323 failed to initialize! Check wiring, SDO pin, and power supply.");
+    while (1)
+      ; // Stop if setup fails
+  }
 
   displayPrint("Setup done!");
 
