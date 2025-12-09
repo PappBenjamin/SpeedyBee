@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -12,6 +14,28 @@ using SpeedyBee.ViewModels;
 
 namespace SpeedyBee.Views
 {
+    public class DataTableItem : INotifyPropertyChanged
+    {
+        public int AccelX { get; set; }
+        public int AccelY { get; set; }
+        public int AccelZ { get; set; }
+        public int GyroX { get; set; }
+        public int GyroY { get; set; }
+        public int GyroZ { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public DataTableItem(ImuData data)
+        {
+            AccelX = (int)Math.Round(data.accel_x);
+            AccelY = (int)Math.Round(data.accel_y);
+            AccelZ = (int)Math.Round(data.accel_z);
+            GyroX = (int)Math.Round(data.gyro_x);
+            GyroY = (int)Math.Round(data.gyro_y);
+            GyroZ = (int)Math.Round(data.gyro_z);
+        }
+    }
+
     public partial class VisualizationViewport : UserControl
     {
         private Transform3DGroup _robotTransform;
@@ -23,6 +47,8 @@ namespace SpeedyBee.Views
         private const double CameraMovementSpeed = 0.2;
         private Vector3 _accumulatedRotation = Vector3.Zero;
         private Vector3 _accumulatedPosition = Vector3.Zero;
+        private const int MaxDataBufferSize = 3;
+        private ObservableCollection<DataTableItem> _dataBuffer = new ObservableCollection<DataTableItem>();
 
         public VisualizationViewport()
         {
@@ -38,6 +64,9 @@ namespace SpeedyBee.Views
             bodyModel.Transform = _robotTransform;
             headModel.Transform = _robotTransform;
             UpdateCameraDirection();
+
+            // Initialize DataGrid binding
+            dataGrid.ItemsSource = _dataBuffer;
         }
 
         private void ApplyBaseTransform()
@@ -155,6 +184,8 @@ namespace SpeedyBee.Views
 
         public void UpdateImuTransform(ImuData data)
         {
+            Console.WriteLine($"UpdateImuTransform called with data: accel({data.accel_x}, {data.accel_y}, {data.accel_z}), gyro({data.gyro_x}, {data.gyro_y}, {data.gyro_z})");
+
             Vector3 acceleration = new Vector3(
                 data.accel_x,
                 data.accel_y,
@@ -205,6 +236,36 @@ namespace SpeedyBee.Views
                 _accumulatedPosition.Y + 0.4,
                 _accumulatedPosition.Z
             ));
+
+            // Update data table with latest sensor values
+            UpdateDataBuffer(data);
+        }
+
+        private void UpdateDataBuffer(ImuData data)
+        {
+            Console.WriteLine($"UpdateDataBuffer called - current thread: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+
+            // Ensure we're on the UI thread and update the collection
+            if (!Dispatcher.CheckAccess())
+            {
+                Console.WriteLine("Not on UI thread, dispatching...");
+                Dispatcher.Invoke(() => UpdateDataBuffer(data));
+                return;
+            }
+
+            Console.WriteLine("On UI thread, adding data to buffer");
+
+            _dataBuffer.Add(new DataTableItem(data));
+            if (_dataBuffer.Count > MaxDataBufferSize)
+            {
+                _dataBuffer.RemoveAt(0);
+            }
+
+            Console.WriteLine($"Data buffer now has {_dataBuffer.Count} items");
+
+            // Force DataGrid refresh
+            dataGrid.ItemsSource = null;
+            dataGrid.ItemsSource = _dataBuffer;
         }
 
         public void UpdateFrameTransform(Vector3 acceleration, Vector3 rotation)
@@ -317,6 +378,9 @@ namespace SpeedyBee.Views
             _cameraYaw = 0;
             _cameraRoll = 0;
             UpdateCameraDirection();
+
+            // Clear data buffer
+            _dataBuffer.Clear();
         }
     }
 }
