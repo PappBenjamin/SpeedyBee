@@ -26,7 +26,7 @@ void Menu::update(int keypadNum)
     // BTN0 = 0 (Select / Toggle Edit)
     // BTN1 = 1 (Next Screen)
 
-    if (keypadNum == BTN1)
+    if (keypadNum == Key4)
     {
         if (!isEditing)
         {
@@ -38,7 +38,7 @@ void Menu::update(int keypadNum)
         return;
     }
 
-    if (keypadNum == BTN0)
+    if (keypadNum == Key3)
     {
         // Toggle Edit Mode in applicable screens
         if (currentScreen == SCREEN_PID_TUNING || currentScreen == SCREEN_EDF)

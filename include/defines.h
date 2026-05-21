@@ -23,13 +23,12 @@
 
 enum Keypad
 {
-    BTN0 = 0,
-    BTN1 = 1,
-    Key1 = 4,
-    Key2 = 5,
-    Key3 = 2,
-    Key4 = 3,
-
+    // Key mappings from IO expander pins
+    // Values reflect mcp.getLastInterruptPin() results
+    Key1 = 4, // Up / Increase
+    Key2 = 5, // Down / Decrease
+    Key3 = 2, // Next Screen
+    Key4 = 3, // Toggle Edit / Select
 };
 
 #endif // DEFINES_H
