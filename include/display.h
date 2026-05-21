@@ -1,15 +1,39 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include <Arduino.h>
+#include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "defines.h"
 
-extern Adafruit_SSD1306 display;
+class Display
+{
+public:
+    Display();
 
-void displayInit();
-void displayClear();
-void displayPrint(const char *text, double value = (-1.0));
-void display_IR(u16_t *irValues);
+    // Initialize display
+    bool setup();
+
+    // Clear display
+    void clear();
+
+    // Draw loading screen
+    void drawLoadingScreen(const char *status = "Loading...");
+
+    // Draw the PID Tuning screen
+    // selectedOption: 0=Kp, 1=Kd, 2=Base, 3=MaxTurn
+    void drawPidTuningScreen(double Kp, double Kd, double baseSpeed, double maxTurnSpeed, int selectedOption);
+
+    // Draw the Sensor View screen
+    void drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positionError);
+
+    // Draw EDF Settings screen
+    // selectedOption: 0=Enable/Disable, 1=PWM
+    void drawEdfScreen(bool enabled, int pwm, int selectedOption);
+
+private:
+    Adafruit_SSD1306 display;
+};
 
 #endif // DISPLAY_H

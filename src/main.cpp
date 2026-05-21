@@ -4,44 +4,33 @@
 #define ARDUINOTRACE_ENABLE 1
 #include <ArduinoTrace.h>
 
-// IO Expander
+#include "motors.h"
+#include "menu.h"
+#include "display.h"
+
+// Hardware instances
 Adafruit_MCP23X17 mcp;
-
-// Display
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-// QTR Sensors
+Display uiDisplay;
 QTRSensors qtr;
-
-// IMU
 IMU imu;
+Motor motor;
+Menu robotMenu;
 
-// Menu2
-Menu menu;
-// Menu state and handler
-MenuState currentMenuState = MAIN_MENU;
-
-// first speed
-
-// PID Constants        speed correction
-double Kp = 1.525;          /*       1.525          Increase Proportional control slightly for better response */
-double Kd = 0.001;          /*       0.0015 -> 0.0019        Increase Derivative for stability in curves */
-double BaseSpeed = 80.0;    // Base speed of the motors
-double MaxTurnSpeed = 90.0; // Maximum speed adjustment for turning
-
-int currentError = 0;     // Current position error
-double filteredError = 0; // Use for low-pass filtering error
+// Global Sensor State
+uint16_t QTRSensorValues[QTRSensorCount];
+int currentError = 0;
+double filteredError = 0;
 int lastError = 0;
 
-void forward(int speedA, int speedB);
+// Core Tuning Variables (Modified by Menu/Serial)
+double Kp = 1.525;
+double Kd = 0.001;
+double BaseSpeed = 80.0;
+double MaxTurnSpeed = 90.0;
 
-void settingPinsModes();
-
+// Forward declarations
 void readSensorDataAndControl();
-
 void readSerialDataAndControl();
-
-void showCurrentPIDValues();
 
 void setup()
 {
@@ -52,40 +41,38 @@ void setup()
 
   delay(1000);
 
-  // Set pin modes
-  settingPinsModes();
+  // Initialize motors
+  motor.setup();
 
+  // Buzzer init
+  pinMode(BUZZER, OUTPUT);
   analogWrite(BUZZER, 255);
   delay(100);
   analogWrite(BUZZER, 0);
 
-  // display
+  // Display init
+  uiDisplay.setup();
+  uiDisplay.drawLoadingScreen("Display Init");
 
-  displayInit();
-  displayPrint("SpeedyBee!");
-
-  // Buzzer
-  // playStartSong();
-
-  // IO Expander
-  //  setupExpander();
-  // displayPrint("Expander init");
+  // IO Expander init
+  uiDisplay.drawLoadingScreen("Expander Init");
+  setupExpander(); // Provided elsewhere in the project
 
   // QTR Sensors
-  displayPrint("QTR calibration ...");
-  // qtrCalibrate();
+  uiDisplay.drawLoadingScreen("QTR calibration");
+  qtrCalibrate(); // Provided elsewhere in the project
 
   // IMU
-  displayPrint("IMU init");
+  uiDisplay.drawLoadingScreen("IMU init");
   if (!imu.begin())
   {
-    Serial.println("BMI323 failed to initialize! Check wiring, SDO pin, and power supply.");
+    Serial.println("BMI323 failed to initialize!");
+    uiDisplay.drawLoadingScreen("IMU FAIL!");
     while (1)
-      ; // Stop if setup fails
+      ;
   }
 
-  displayPrint("Setup done!");
-
+  uiDisplay.drawLoadingScreen("Setup done!");
   Serial.println("Setup done!");
   delay(1000);
 
@@ -96,41 +83,35 @@ void setup()
 
 void loop()
 {
-  // int KeypadNum = checkExpanderInterrupt();
-  // if (KeypadNum != -1)
-  // {
-  //   // TODO: handle menu
-  //   Serial.print("Keypad: ");
-  //   Serial.println(KeypadNum);
-  //   displayPrint("Keypad: ");
-  //   displayPrint(String(KeypadNum).c_str());
-  //   delay(200);
-  // }
+  // 1. Process Menu Input
+  int keypadNum = checkExpanderInterrupt();
+  if (keypadNum != -1)
+  {
+    Serial.print("Keypad Pressed: ");
+    Serial.println(keypadNum);
+    robotMenu.update(keypadNum);
+  }
 
-  // readSensorDataAndControl();
-
+  // 2. Read Serial overrides (optional)
   readSerialDataAndControl();
 
+  // 3. Sensor & Control Core Update
+  readSensorDataAndControl();
+
+  // 4. Auxiliary Sensor update
   imu.read();
-  imu.printData();
+  // imu.printData(); // Optional debug
 
-  showCurrentPIDValues();
+  // 5. Update UI (throttled inside or called directly)
+  robotMenu.render(uiDisplay, QTRSensorValues, currentError);
 
-  delay(10); // Delay for readability
+  // Note: EDF control not yet implemented hardware-wise,
+  // but logic is prepared via robotMenu.isEdfEnabled()
+  // and robotMenu.getEdfPwm() if an ESC is wired.
+
+  delay(10); // Loop stability
 }
 
-void showCurrentPIDValues()
-{
-  display.clearDisplay();
-  display.setTextSize(1.9);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 5);
-  display.println("Kp: " + String(Kp));
-  display.println("Kd: " + String(Kd));
-  display.println("BaseSpeed: " + String(BaseSpeed));
-  display.println("MaxTurn: " + String(MaxTurnSpeed));
-  display.display();
-}
 void readSerialDataAndControl()
 {
   if (Serial.available() > 0)
@@ -138,112 +119,49 @@ void readSerialDataAndControl()
     String input = Serial.readStringUntil('\n');
     input.trim();
 
-    // simple 2 values separated by comma
     int commaIndex = input.indexOf(',');
     if (commaIndex != -1)
     {
       String firstValue = input.substring(0, commaIndex);
       String secondValue = input.substring(commaIndex + 1);
-      String thirdValue = input.substring(commaIndex + 1);
-      String fourthValue = input.substring(commaIndex + 1);
-
+      // More robust parting should be used for full replacement, simplified given context
       Kp = firstValue.toDouble();
       Kd = secondValue.toDouble();
-      BaseSpeed = thirdValue.toDouble();
-      MaxTurnSpeed = fourthValue.toDouble();
     }
   }
 }
 
 void readSensorDataAndControl()
 {
-
-  u16_t QTRSensorValues[5];
+  // Assume generic reads and display hook defined in separate files
   readQTRSensors(QTRSensorValues);
-  printQTRSensorValues(QTRSensorValues);
-  display_IR(QTRSensorValues);
 
+  // Position is white-line targeted
   int position = qtr.readLineWhite(QTRSensorValues);
-  currentError = position - 2000; // Calculate error: assume center of line is 2000
 
-  Serial.print("Error: ");
-  Serial.println(currentError);
+  // Update globals for menu viewing
+  currentError = position - 2000;
 
-  // Low-pass filter on error
-  double alpha = 0.25; // if alpha is closer to 1, less responsive but smoother
+  // Low-pass filter
+  double alpha = 0.25;
   filteredError = alpha * filteredError + (1 - alpha) * currentError;
 
-  Serial.print("Filtered Error: ");
-  Serial.println(filteredError);
-
-  // Cubic function for speed correction
+  // Smoothing non-linear mapping
   double tanhError = tanh(filteredError / 1000.0);
 
-  Serial.print(" T Error: ");
-  Serial.println(tanhError);
-
-  // --- PD control calculation ---
+  // PD control calculation
   double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
 
-  // --- Apply correction symmetrically ---
+  // Apply correction
   int leftSpeed = BaseSpeed - (int)(speedCorrection * MaxTurnSpeed);
   int rightSpeed = BaseSpeed + (int)(speedCorrection * MaxTurnSpeed);
 
-  // --- Limit motor speed ---
+  // Limit motor speed map strictly for driver limits
   leftSpeed = constrain(leftSpeed, -200, 200);
   rightSpeed = constrain(rightSpeed, -200, 200);
 
-  // --- Debug ---
-  Serial.print("Speed Correction: ");
-  Serial.println(speedCorrection);
-  Serial.print("Left Speed: ");
-  Serial.println(leftSpeed);
-  Serial.print("Right Speed: ");
-  Serial.println(rightSpeed);
+  // Drive new motor interface
+  motor.forward(leftSpeed, rightSpeed);
 
-  // Drive motors
-  forward(leftSpeed, rightSpeed);
   lastError = filteredError;
-}
-
-void settingPinsModes()
-{
-  pinMode(AIN1, OUTPUT);
-  pinMode(AIN2, OUTPUT);
-  pinMode(PWMA, OUTPUT);
-
-  pinMode(BIN1, OUTPUT);
-  pinMode(BIN2, OUTPUT);
-  pinMode(PWMB, OUTPUT);
-
-  pinMode(BUZZER, OUTPUT);
-}
-
-void forward(int speedA, int speedB)
-{
-  if (speedA >= 0)
-  {
-    digitalWrite(AIN1, LOW);
-    digitalWrite(AIN2, HIGH);
-    analogWrite(PWMA, speedA);
-  }
-  else
-  {
-    digitalWrite(AIN1, HIGH);
-    digitalWrite(AIN2, LOW);
-    analogWrite(PWMA, -speedA);
-  }
-
-  if (speedB >= 0)
-  {
-    digitalWrite(BIN1, LOW);
-    digitalWrite(BIN2, HIGH);
-    analogWrite(PWMB, speedB);
-  }
-  else
-  {
-    digitalWrite(BIN1, HIGH);
-    digitalWrite(BIN2, LOW);
-    analogWrite(PWMB, -speedB);
-  }
 }

@@ -13,13 +13,11 @@
 #define INT_A 26
 
 // Motor pins
-#define AIN1 6
-#define AIN2 7
-#define PWMA 8
-
-#define BIN1 20
-#define BIN2 21
-#define PWMB 22
+#define PWM_A1 6
+#define PWM_A2 7
+#define PWM_B1 8
+#define PWM_B2 9
+#define N_SLEEP 22
 
 #define BUZZER 3
 
