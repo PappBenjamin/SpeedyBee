@@ -25,10 +25,10 @@ enum Keypad
 {
     // Key mappings from IO expander pins
     // Values reflect mcp.getLastInterruptPin() results
-    Key1 = 4, // Up / Increase
-    Key2 = 5, // Down / Decrease
-    Key3 = 2, // Next Screen
-    Key4 = 3, // Toggle Edit / Select
+    Key1 = 7, // Up / Increase
+    Key2 = 6, // Down / Decrease
+    Key3 = 5, // Next Screen
+    Key4 = 4, // Toggle Edit / Select
 };
 
 #endif // DEFINES_H
