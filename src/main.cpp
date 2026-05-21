@@ -96,7 +96,7 @@ void loop()
   readSerialDataAndControl();
 
   // 3. Sensor & Control Core Update
-  readSensorDataAndControl();
+  // readSensorDataAndControl();
 
   // 4. Auxiliary Sensor update
   imu.read();
@@ -108,6 +108,8 @@ void loop()
   // Note: EDF control not yet implemented hardware-wise,
   // but logic is prepared via robotMenu.isEdfEnabled()
   // and robotMenu.getEdfPwm() if an ESC is wired.
+
+  motor.forward(50, 50);
 
   delay(10); // Loop stability
 }
