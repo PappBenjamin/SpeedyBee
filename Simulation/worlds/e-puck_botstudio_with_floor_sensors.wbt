@@ -3,15 +3,16 @@
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+EXTERNPROTO "../protos/E-puck.proto"
 EXTERNPROTO "../protos/E-puckGroundSensors.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.2276033796275753 0.058061486310485994 0.9720213811380504 3.597983940848479
-  position 0.3561711904201066 0.6040259256962378 0.2513151851024445
+  orientation -0.3814835794670733 -0.14297593679955178 0.9132514221687693 4.465375226519568
+  position 0.10552666005824156 0.9267339709493077 0.44884584334180305
   follow "e-puck"
+  followType "None"
 }
 TexturedBackground {
 }
@@ -31,13 +32,12 @@ RectangleArena {
     metalness 0
   }
 }
-DEF E_PUCK E-puck {
-  hidden position_0_0 -5.610139958597281e-13
-  hidden position_0_1 -5.729374153964164e-13
-  translation -0.018757 0.37 -6.3962e-05
+DEF SpeedyBee E-puck {
+  translation 0 0.38 -6.3962e-05
   rotation 1.36274e-09 -2.75898e-09 1 1.0472
   controller "pid_controller"
   window "botstudio"
+  supervisor TRUE
   camera_width 40
   camera_height 1
   groundSensorsSlot [
