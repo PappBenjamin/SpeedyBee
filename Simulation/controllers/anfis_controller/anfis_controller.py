@@ -25,6 +25,7 @@ class RuntimeAnfisModel:
 
     @classmethod
     def load(cls, path):
+        path = Path(path)
         if not path.exists():
             raise FileNotFoundError(
                 f"Model file not found: {path}. Train the fuzzy controller first with Simulation/python/anfis_train.py."

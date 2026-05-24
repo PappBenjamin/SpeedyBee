@@ -5,30 +5,30 @@
 #include <algorithm>
 
 namespace ANFIS {
-    const float ERROR_MIN = -0.6526310652925633f;
-    const float ERROR_MAX = 0.4263955530756801f;
+    const float ERROR_MIN = -0.4272650272887312f;
+    const float ERROR_MAX = 0.4268128397493133f;
     const float DT_MIN = 0.0319999999999822f;
-    const float DT_MAX = 0.0320000000000106f;
-    const float TARGET_MIN = -27.54349065519914f;
-    const float TARGET_MAX = 66.26529277510215f;
+    const float DT_MAX = 0.0320000000000391f;
+    const float TARGET_MIN = -22.35315016415117f;
+    const float TARGET_MAX = 15.984147124414516f;
 
-    const float CENTERS_ERR[3] = { -0.5f, -0.3f, -0.09999999999999998f };
+    const float CENTERS_ERR[3] = { 0.0f, 0.0f, 0.0f };
     const float SIGMAS_ERR[3]  = { 0.4f, 0.4f, 0.4f };
-    const float CENTERS_DT[3]  = { 0.10000000000000009f, 0.30000000000000004f, 0.5f };
+    const float CENTERS_DT[3]  = { 0.0f, 0.0f, 0.0f };
     const float SIGMAS_DT[3]   = { 0.4f, 0.4f, 0.4f };
 
     const int RULE_MAP[9][2] = { { 0, 0 }, { 0, 1 }, { 0, 2 }, { 1, 0 }, { 1, 1 }, { 1, 2 }, { 2, 0 }, { 2, 1 }, { 2, 2 } };
 
     const float CONSEQUENTS[9][3] = {
-        { 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f }
+        { 0.05360053633182514f, 0.0f, 0.0f },
+        { 0.05360053633182514f, 0.0f, 0.0f },
+        { 0.05360053633182514f, 0.0f, 0.0f },
+        { 0.05360053633182514f, 0.0f, 0.0f },
+        { 0.05360053633182514f, 0.0f, 0.0f },
+        { 0.05360053633182514f, 0.0f, 0.0f },
+        { 0.05360053633182514f, 0.0f, 0.0f },
+        { 0.05360053633182514f, 0.0f, 0.0f },
+        { 0.05360053633182514f, 0.0f, 0.0f }
     };
 
     inline float scale(float val, float min_v, float max_v) {
