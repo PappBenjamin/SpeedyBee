@@ -58,7 +58,13 @@ def reset_robot():
         robot_node.resetPhysics()
 
 def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
-    """Runs a single lap. Returns the total error accumulated (lower is better)."""
+    """Runs a single lap.
+
+    Returns a tuple: (score, lap_completed)
+    - score: total error adjusted by a reward if the robot completes a full loop
+    - lap_completed: boolean indicating whether a loop (return to start) was detected
+    Lower score is better.
+    """
     reset_robot()
     print(f"Running lap with Kp={current_Kp:.3f}, Ki={current_Ki:.3f}, Kd={current_Kd:.3f}")
     last_error = 0.0
@@ -66,6 +72,15 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
     total_lap_error = 0.0
     step_count = 0
     max_steps = 2500 # Adjust this to match how many steps it takes to finish 1 lap
+    # Loop-detection parameters
+    lap_completed = False
+    # Grab the starting translation to detect when we return close to it
+    if robot_node:
+        start_pos = robot_node.getField("translation").getSFVec3f()
+    else:
+        start_pos = START_TRANS
+    min_steps_before_check = int(0.1 * max_steps)  # don't trigger immediately
+    return_threshold = 0.15  # meters - how close to start counts as a loop
     
     # Open CSV only if we are in data collection mode
     if log_data:
@@ -116,6 +131,18 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
         left_motor.setVelocity(right_speed)
         right_motor.setVelocity(left_speed)
         
+        # Check if we've come back close to the starting position (loop completed)
+        if robot_node and step_count > min_steps_before_check and not lap_completed:
+            cur_pos = robot_node.getField("translation").getSFVec3f()
+            dx = cur_pos[0] - start_pos[0]
+            dy = cur_pos[1] - start_pos[1]
+            dz = cur_pos[2] - start_pos[2]
+            dist_sq = dx*dx + dy*dy + dz*dz
+            if dist_sq <= return_threshold * return_threshold:
+                lap_completed = True
+                # Optionally break early — a completed loop is a valid termination
+                # break
+
         step_count += 1
         
     if log_data:
@@ -125,7 +152,15 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
     left_motor.setVelocity(0.0)
     right_motor.setVelocity(0.0)
     
-    return total_lap_error
+    # Compute a final score. If lap completed, apply a reward that reduces the score
+    # (twiddle expects lower scores to be better). The reward scales with how
+    # quickly the loop was completed (fewer steps -> larger reward).
+    reward = 0.0
+    if lap_completed:
+        reward = (max_steps - step_count) * 0.02  # tuning constant
+
+    final_score = max(0.0, total_lap_error - reward)
+    return final_score, lap_completed
 
 # ==========================================
 # MAIN EXECUTION
@@ -140,29 +175,31 @@ else:
     p = [Kp, Ki, Kd]
     dp = [0.5, 0.0, 0.1] # Initial nudge amounts
     
-    best_error = run_lap(p[0], p[1], p[2], log_data=False)
-    print(f"Baseline Error: {best_error:.2f}")
+    best_score, best_lap = run_lap(p[0], p[1], p[2], log_data=False)
+    print(f"Baseline Score: {best_score:.2f} | Lap Completed: {best_lap}")
 
     while sum(dp) > 0.01: # Stop when nudges get very small
         for i in range(len(p)):
             p[i] += dp[i]
-            err = run_lap(p[0], p[1], p[2], log_data=False)
-            
-            if err < best_error:
-                best_error = err
+            err_score, lap_done = run_lap(p[0], p[1], p[2], log_data=False)
+
+            if err_score < best_score:
+                best_score = err_score
+                best_lap = lap_done
                 dp[i] *= 1.1 # Nudge bigger next time
             else:
                 p[i] -= 2 * dp[i] # Try the other direction
-                err = run_lap(p[0], p[1], p[2], log_data=False)
-                
-                if err < best_error:
-                    best_error = err
+                err_score, lap_done = run_lap(p[0], p[1], p[2], log_data=False)
+
+                if err_score < best_score:
+                    best_score = err_score
+                    best_lap = lap_done
                     dp[i] *= 1.1
                 else:
                     p[i] += dp[i] # Revert
                     dp[i] *= 0.9  # Shrink nudge
                     
-        print(f"Current Best PID: Kp={p[0]:.3f}, Ki={p[1]:.3f}, Kd={p[2]:.3f} | Total Error: {best_error:.2f}")
+        print(f"Current Best PID: Kp={p[0]:.3f}, Ki={p[1]:.3f}, Kd={p[2]:.3f} | Best Score: {best_score:.2f} | Lap: {best_lap}")
 
     print("\n--- TUNING COMPLETE ---")
     print(f"Final Optimized PID: Kp={p[0]:.3f}, Ki={p[1]:.3f}, Kd={p[2]:.3f}")
