@@ -9,7 +9,7 @@ timestep = int(robot.getBasicTimeStep())
 # ⚙️ OPERATION MODE
 # ==========================================
 # Set to True to find perfect PID values. Set to False to log ANFIS data.
-AUTO_TUNE = True  
+AUTO_TUNE = False  
 
 # Teleport Coordinates (Replace these with the numbers from your Webots Scene Tree)
 START_TRANS = [-0.33, 0.18, -6.39633e-05]  # X, Y, Z
@@ -46,9 +46,9 @@ BASE_SPEED = 4.0
 WHITE_VALUE = 1000.0 
 
 # Base PID Constants (Will be overwritten if AUTO_TUNE is True)
-Kp = 2.5            
+Kp = 12.813           
 Ki = 0.0
-Kd = 0.5
+Kd = 0.785
 
 def reset_robot():
     """Teleports the robot back to the starting line."""
