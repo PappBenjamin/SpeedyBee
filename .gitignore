@@ -93,7 +93,7 @@ $RECYCLE.BIN/
 ## OpenGL / OpenTK specific
 # (if you save compiled shaders or screenshots)
 *.shadercache
-*.png
+# *.png
 *.jpg
 
 ## Ignore generated documentation
