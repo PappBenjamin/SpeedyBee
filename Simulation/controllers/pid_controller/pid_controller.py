@@ -50,6 +50,29 @@ Kp = 12.813
 Ki = 0.0
 Kd = 0.785
 
+# ANFIS data-collection settings
+ANFIS_TARGET_ROWS = 7000
+ANFIS_OUTPUT_FILE = 'anfis_16_sensor_data.csv'
+ANFIS_MIN_LOOP_STEPS = 1200
+ANFIS_RETURN_THRESHOLD = 0.15
+
+
+def compute_middle_error(sensor_values):
+    """Compute a reduced cross-track error from the middle sensors only."""
+    middle_start = (NUM_SENSORS // 2) - 2
+    middle_end = (NUM_SENSORS // 2) + 2
+    weighted_sum = 0.0
+    total_intensity = 0.0
+
+    for index in range(middle_start, middle_end):
+        intensity = max(0.0, WHITE_VALUE - sensor_values[index])
+        weighted_sum += intensity * weights[index]
+        total_intensity += intensity
+
+    if total_intensity > 0:
+        return weighted_sum / total_intensity
+    return 0.0
+
 def reset_robot():
     """Teleports the robot back to the starting line."""
     if robot_node:
@@ -57,7 +80,7 @@ def reset_robot():
         robot_node.getField("rotation").setSFRotation(START_ROT)
         robot_node.resetPhysics()
 
-def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
+def run_lap(current_Kp, current_Ki, current_Kd, log_data=False, csv_writer=None, row_state=None):
     """Runs a single lap.
 
     Returns a tuple: (score, lap_completed)
@@ -70,6 +93,7 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
     last_error = 0.0
     integral = 0.0
     total_lap_error = 0.0
+    rows_written = 0
     step_count = 0
     max_steps = 2500 # Adjust this to match how many steps it takes to finish 1 lap
     # Loop-detection parameters
@@ -79,16 +103,11 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
         start_pos = robot_node.getField("translation").getSFVec3f()
     else:
         start_pos = START_TRANS
-    min_steps_before_check = int(0.1 * max_steps)  # don't trigger immediately
-    return_threshold = 0.15  # meters - how close to start counts as a loop
+    min_steps_before_check = ANFIS_MIN_LOOP_STEPS if log_data else int(0.1 * max_steps)
+    return_threshold = ANFIS_RETURN_THRESHOLD
     
-    # Open CSV only if we are in data collection mode
-    if log_data:
-        csv_file = open('anfis_16_sensor_data.csv', mode='w', newline='')
-        csv_writer = csv.writer(csv_file)
-        # Added 'error' and 'derivative' to the logged headers
-        headers = [f'sensor{i}' for i in range(NUM_SENSORS)] + ['error', 'derivative', 'steering_output']
-        csv_writer.writerow(headers)
+    if log_data and csv_writer is None:
+        raise ValueError("csv_writer is required when log_data=True")
 
     while robot.step(timestep) != -1 and step_count < max_steps:
         sensor_values = []
@@ -102,11 +121,18 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
             weighted_sum += intensity * weights[i]
             total_intensity += intensity
 
-        # Calculate cross-track error
+        # Calculate full cross-track error for control.
         if total_intensity > 0:
             error = weighted_sum / total_intensity
         else:
             error = 0.0
+
+        middle_error = compute_middle_error(sensor_values)
+        current_time = robot.getTime()
+        if row_state is None:
+            row_state = {"last_time": current_time}
+        delta_time = current_time - row_state["last_time"]
+        row_state["last_time"] = current_time
             
         # Accumulate error for the Twiddle algorithm to judge this lap's performance
         total_lap_error += abs(error)
@@ -117,9 +143,17 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
         steering_output = (current_Kp * error) + (current_Ki * integral) + (current_Kd * derivative)
         last_error = error
         
-        # Log data for ANFIS if enabled
+        # Log reduced ANFIS data if enabled
         if log_data:
-            csv_writer.writerow(sensor_values + [error, derivative, steering_output])
+            csv_writer.writerow([
+                current_time,
+                delta_time,
+                middle_error,
+                steering_output,
+                error,
+                derivative,
+            ])
+            rows_written += 1
         
         # Apply differential steering (Keeping your confirmed swapped motors)
         left_speed = BASE_SPEED + steering_output
@@ -145,9 +179,6 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
 
         step_count += 1
         
-    if log_data:
-        csv_file.close()
-        
     # Stop motors at the end of the lap
     left_motor.setVelocity(0.0)
     right_motor.setVelocity(0.0)
@@ -160,28 +191,44 @@ def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
         reward = (max_steps - step_count) * 0.02  # tuning constant
 
     final_score = max(0.0, total_lap_error - reward)
-    return final_score, lap_completed
+    return final_score, lap_completed, rows_written
 
 # ==========================================
 # MAIN EXECUTION
 # ==========================================
 if not AUTO_TUNE:
-    print(f"Running Data Collection Lap... (Kp={Kp}, Ki={Ki}, Kd={Kd})")
-    run_lap(Kp, Ki, Kd, log_data=True)
-    print("Data collection complete! Check anfis_16_sensor_data.csv")
+    print(f"Running Data Collection Laps... (Kp={Kp}, Ki={Ki}, Kd={Kd})")
+    total_rows = 0
+    lap_index = 0
+    with open(ANFIS_OUTPUT_FILE, mode='w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        headers = ['timestamp', 'delta_time', 'middle_error', 'steering_output', 'full_error', 'derivative']
+        csv_writer.writerow(headers)
+
+        while total_rows < ANFIS_TARGET_ROWS:
+            lap_index += 1
+            row_state = {"last_time": robot.getTime()}
+            lap_score, lap_completed, lap_rows = run_lap(Kp, Ki, Kd, log_data=True, csv_writer=csv_writer, row_state=row_state)
+            total_rows += lap_rows
+            print(
+                f"Lap {lap_index}: rows={lap_rows}, total_rows={total_rows}, "
+                f"score={lap_score:.2f}, loop_completed={lap_completed}"
+            )
+
+    print(f"Data collection complete! Wrote {total_rows} rows to {ANFIS_OUTPUT_FILE}")
     
 else:
     print("Starting Twiddle Auto-Tuning...")
     p = [Kp, Ki, Kd]
     dp = [0.5, 0.0, 0.1] # Initial nudge amounts
     
-    best_score, best_lap = run_lap(p[0], p[1], p[2], log_data=False)
+    best_score, best_lap, _ = run_lap(p[0], p[1], p[2], log_data=False)
     print(f"Baseline Score: {best_score:.2f} | Lap Completed: {best_lap}")
 
     while sum(dp) > 0.01: # Stop when nudges get very small
         for i in range(len(p)):
             p[i] += dp[i]
-            err_score, lap_done = run_lap(p[0], p[1], p[2], log_data=False)
+            err_score, lap_done, _ = run_lap(p[0], p[1], p[2], log_data=False)
 
             if err_score < best_score:
                 best_score = err_score
@@ -189,7 +236,7 @@ else:
                 dp[i] *= 1.1 # Nudge bigger next time
             else:
                 p[i] -= 2 * dp[i] # Try the other direction
-                err_score, lap_done = run_lap(p[0], p[1], p[2], log_data=False)
+                err_score, lap_done, _ = run_lap(p[0], p[1], p[2], log_data=False)
 
                 if err_score < best_score:
                     best_score = err_score
