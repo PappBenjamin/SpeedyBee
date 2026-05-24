@@ -1,0 +1,179 @@
+#VRML_SIM R2025a utf8
+# license: Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+# license url: https://cyberbotics.com/webots_assets_license
+# keywords: robot/extension
+# Modified 16-sensor array extension for line following.
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Pcb.proto"
+
+PROTO E-puckGroundSensors [
+  field SFVec3f    translation  0 0 0
+  field SFRotation rotation     0 0 1 0
+]
+{
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    children [
+      # Expanded PCB board to visually hold all 16 sensors
+      DEF EPUCK_GROUND_SENSOR_CIRCUIT Pose {
+        translation 0 0 0.014
+        rotation 0.57735 0.57735 0.57735 2.094395
+        children [
+          Shape {
+            appearance Pcb {}
+            geometry Box {
+              size 0.01 0.066 0.001
+            }
+          }
+        ]
+      }
+      
+      # Sensor 0 (Far Left)
+      DEF EPUCK_IR0 DistanceSensor {
+        translation 0 -0.030 0.003
+        rotation 0 1 0 1.570796
+        children [
+          DEF EPUCK_GS_SHAPE Shape {
+            appearance PBRAppearance {
+              baseColor 0.3 0.2 0.2
+              roughness 0.4
+              metalness 0
+            }
+            geometry Box {
+              size 0.002 0.004 0.002
+            }
+          }
+        ]
+        name "ir0"
+        lookupTable [
+          0 1000 0.002
+          0.016 300 0.004
+        ]
+        type "infra-red"
+      }
+      
+      # Sensors 1 to 15 (Spaced 4mm apart dynamically reusing the base shape)
+      DEF EPUCK_IR1 DistanceSensor {
+        translation 0 -0.026 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir1"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR2 DistanceSensor {
+        translation 0 -0.022 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir2"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR3 DistanceSensor {
+        translation 0 -0.018 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir3"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR4 DistanceSensor {
+        translation 0 -0.014 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir4"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR5 DistanceSensor {
+        translation 0 -0.010 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir5"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR6 DistanceSensor {
+        translation 0 -0.006 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir6"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR7 DistanceSensor {
+        translation 0 -0.002 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir7"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR8 DistanceSensor {
+        translation 0 0.002 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir8"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR9 DistanceSensor {
+        translation 0 0.006 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir9"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR10 DistanceSensor {
+        translation 0 0.010 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir10"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR11 DistanceSensor {
+        translation 0 0.014 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir11"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR12 DistanceSensor {
+        translation 0 0.018 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir12"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR13 DistanceSensor {
+        translation 0 0.022 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir13"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR14 DistanceSensor {
+        translation 0 0.026 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir14"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+      DEF EPUCK_IR15 DistanceSensor {
+        translation 0 0.030 0.003
+        rotation 0 1 0 1.570796
+        children [ USE EPUCK_GS_SHAPE ]
+        name "ir15"
+        lookupTable [ 0 1000 0.002, 0.016 300 0.004 ]
+        type "infra-red"
+      }
+    ]
+  }
+}

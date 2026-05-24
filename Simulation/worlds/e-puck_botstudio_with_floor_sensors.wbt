@@ -1,0 +1,48 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "../protos/E-puckGroundSensors.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.3599697673350377 -0.2162223605936545 0.9075624812562861 3.7372861441042744
+  position 1.4786855199215365 1.3100639592455987 1.8008342289872241
+  follow "e-puck"
+  followType "None"
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  rotation 0 0 1 -1.5707953071795862
+  floorSize 1.2 1.8
+  floorTileSize 1.2 1.8
+  floorAppearance PBRAppearance {
+    baseColorMap ImageTexture {
+      url [
+        "../maps/test_map.png"
+      ]
+    }
+    roughness 1
+    metalness 0
+  }
+}
+DEF SpeedyBee E-puck {
+  translation -0.33 0.18 -6.39633e-05
+  rotation -0.001052140210489292 0.0007020571404522981 -0.9999992000580545 -5.307179586466759e-06
+  controller "anfis_controller"
+  window "botstudio"
+  supervisor TRUE
+  camera_width 40
+  camera_height 1
+  groundSensorsSlot [
+    E-puckGroundSensors {
+      translation 0.03 0 0
+    }
+  ]
+}
