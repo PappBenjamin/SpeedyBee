@@ -4,13 +4,13 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puckGroundSensors.proto"
+EXTERNPROTO "../protos/E-puckGroundSensors.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.2650025647552158 -0.00665001246976187 0.9642247756655654 2.3548176453446823
-  position 0.3273290596095835 0.03975042681745732 0.2521603951691325
+  orientation -0.2276033796275753 0.058061486310485994 0.9720213811380504 3.597983940848479
+  position 0.3561711904201066 0.6040259256962378 0.2513151851024445
   follow "e-puck"
 }
 TexturedBackground {
@@ -24,7 +24,7 @@ RectangleArena {
   floorAppearance PBRAppearance {
     baseColorMap ImageTexture {
       url [
-        "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/worlds/textures/oval_line.png"
+        "../maps/test_map.png"
       ]
     }
     roughness 1
@@ -34,8 +34,8 @@ RectangleArena {
 DEF E_PUCK E-puck {
   hidden position_0_0 -5.610139958597281e-13
   hidden position_0_1 -5.729374153964164e-13
-  translation -6.671217434422901e-14 0.44000000001781453 -6.396194871141625e-05
-  rotation 0.0005454428155805808 -0.0003639566822879895 0.9999997850138111 4.69282133980243e-06
+  translation -0.018757 0.37 -6.3962e-05
+  rotation 1.36274e-09 -2.75898e-09 1 1.0472
   controller "pid_controller"
   window "botstudio"
   camera_width 40
