@@ -46,7 +46,7 @@ BASE_SPEED = 4.0
 WHITE_VALUE = 1000.0 
 
 # Base PID Constants (Will be overwritten if AUTO_TUNE is True)
-Kp = 2.0            
+Kp = 2.5            
 Ki = 0.0
 Kd = 0.5
 
@@ -60,7 +60,7 @@ def reset_robot():
 def run_lap(current_Kp, current_Ki, current_Kd, log_data=False):
     """Runs a single lap. Returns the total error accumulated (lower is better)."""
     reset_robot()
-    
+    print(f"Running lap with Kp={current_Kp:.3f}, Ki={current_Ki:.3f}, Kd={current_Kd:.3f}")
     last_error = 0.0
     integral = 0.0
     total_lap_error = 0.0
