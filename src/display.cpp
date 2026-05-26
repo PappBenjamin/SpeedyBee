@@ -12,7 +12,7 @@ bool Display::setup()
         Serial.println("SSD1306 initialization failed!");
         return false;
     }
-    display.invertDisplay(true);
+    // display.invertDisplay(true);
     display.setRotation(2); // Rotate display 180 degrees
     display.clearDisplay();
     display.setTextColor(SSD1306_WHITE);
