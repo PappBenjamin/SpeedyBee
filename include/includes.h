@@ -6,8 +6,8 @@
 // Buzzer
 #include "buzzer.h"
 
-// QTR Sensors
-#include "qtr.h"
+// XLine Sensors
+#include "xline.h"
 
 // display
 #include "display.h"

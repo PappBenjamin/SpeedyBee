@@ -35,7 +35,7 @@ RectangleArena {
 DEF SpeedyBee E-puck {
   translation -0.33 0.18 -6.39633e-05
   rotation -0.001052140210489292 0.0007020571404522981 -0.9999992000580545 -5.307179586466759e-06
-  controller "anfis_controller"
+  controller "pid_controller"
   window "botstudio"
   supervisor TRUE
   camera_width 40

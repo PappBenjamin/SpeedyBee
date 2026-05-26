@@ -12,6 +12,8 @@ bool Display::setup()
         Serial.println("SSD1306 initialization failed!");
         return false;
     }
+    display.invertDisplay(true);
+    display.setRotation(2); // Rotate display 180 degrees
     display.clearDisplay();
     display.setTextColor(SSD1306_WHITE);
     display.display();
@@ -91,8 +93,9 @@ void Display::drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positio
 
     // Draw bar graph for sensors
     int barWidth = SCREEN_WIDTH / sensorCount;
-    if (barWidth < 2)
-        barWidth = 2;
+    if (barWidth < 1)
+        barWidth = 1;
+    int barFillWidth = barWidth > 1 ? barWidth - 1 : 1;
 
     // Assuming values are 0-1000 or similar
     for (int i = 0; i < sensorCount; i++)
@@ -100,9 +103,9 @@ void Display::drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positio
         // scale 0-1000 to max 30 pixels height
         int h = map(qtrValues[i], 0, 1000, 0, 30);
         h = constrain(h, 0, 30);
-        int x = i * barWidth + (barWidth / 2) - 5;
+        int x = i * barWidth;
         int y = 50 - h;
-        display.fillRect(x, y, 10, h, SSD1306_WHITE);
+        display.fillRect(x, y, barFillWidth, h, SSD1306_WHITE);
     }
 
     display.setCursor(0, 54);

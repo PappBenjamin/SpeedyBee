@@ -11,13 +11,12 @@
 // Hardware instances
 Adafruit_MCP23X17 mcp;
 Display uiDisplay;
-QTRSensors qtr;
 IMU imu;
 Motor motor;
 Menu robotMenu;
 
 // Global Sensor State
-uint16_t QTRSensorValues[QTRSensorCount];
+uint16_t XLineSensorValues[XLINE_SENSOR_COUNT];
 int currentError = 0;
 double filteredError = 0;
 int lastError = 0;
@@ -58,9 +57,9 @@ void setup()
   uiDisplay.drawLoadingScreen("Expander Init");
   setupExpander(); // Provided elsewhere in the project
 
-  // QTR Sensors
-  uiDisplay.drawLoadingScreen("QTR calibration");
-  qtrCalibrate(); // Provided elsewhere in the project
+  // XLine Sensors
+  uiDisplay.drawLoadingScreen("XLine calibration");
+  xlineCalibrate();
 
   // IMU
   uiDisplay.drawLoadingScreen("IMU init");
@@ -96,21 +95,18 @@ void loop()
   readSerialDataAndControl();
 
   // 3. Sensor & Control Core Update
-  // readSensorDataAndControl();
+  readSensorDataAndControl();
 
   // 4. Auxiliary Sensor update
   imu.read();
   // imu.printData(); // Optional debug
 
   // 5. Update UI (throttled inside or called directly)
-  robotMenu.render(uiDisplay, QTRSensorValues, currentError);
+  robotMenu.render(uiDisplay, XLineSensorValues, currentError);
 
   // Note: EDF control not yet implemented hardware-wise,
   // but logic is prepared via robotMenu.isEdfEnabled()
   // and robotMenu.getEdfPwm() if an ESC is wired.
-
-  motor.forward(50, 50);
-
   delay(10); // Loop stability
 }
 
@@ -135,14 +131,12 @@ void readSerialDataAndControl()
 
 void readSensorDataAndControl()
 {
-  // Assume generic reads and display hook defined in separate files
-  readQTRSensors(QTRSensorValues);
+  readXLineSensors(XLineSensorValues);
 
-  // Position is white-line targeted
-  int position = qtr.readLineWhite(QTRSensorValues);
+  int position = xlineReadLinePosition(XLineSensorValues);
 
   // Update globals for menu viewing
-  currentError = position - 2000;
+  currentError = position - XLINE_POSITION_CENTER;
 
   // Low-pass filter
   double alpha = 0.25;
