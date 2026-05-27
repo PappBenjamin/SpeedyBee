@@ -86,7 +86,7 @@ void Menu::update(int keypadNum)
             if (selectedOption == 0)
                 Kp += tweakDir * 0.05;
             else if (selectedOption == 1)
-                Kd += tweakDir * 0.005;
+                Kd += tweakDir * 0.002;
             else if (selectedOption == 2)
                 BaseSpeed += tweakDir * 5.0;
             else if (selectedOption == 3)
