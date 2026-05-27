@@ -109,7 +109,7 @@ void Display::drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positio
     }
 
     display.setCursor(0, 54);
-    display.print("Err: ");
+    display.print("E: ");
     display.print(positionError);
 
     display.setCursor(55, 54);
