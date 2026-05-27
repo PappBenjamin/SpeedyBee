@@ -24,7 +24,7 @@ int currentPwmL = 0;
 int currentPwmR = 0;
 
 // Core Tuning Variables (Modified by Menu/Serial)
-double Kp = 1.525;
+double Kp = 4.825;
 double Kd = 0.001;
 double BaseSpeed = 60.0;
 double MaxTurnSpeed = 5.0;
