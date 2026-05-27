@@ -19,7 +19,7 @@ namespace
         12000,
         13000,
         14000,
-        14000,
+        7000,
     };
     uint16_t xlineMinValues[XLINE_SENSOR_COUNT];
     uint16_t xlineMaxValues[XLINE_SENSOR_COUNT];

@@ -20,6 +20,8 @@ uint16_t XLineSensorValues[XLINE_SENSOR_COUNT];
 int currentError = 0;
 double filteredError = 0;
 int lastError = 0;
+int currentPwmL = 0;
+int currentPwmR = 0;
 
 // Core Tuning Variables (Modified by Menu/Serial)
 double Kp = 1.525;
@@ -102,7 +104,7 @@ void loop()
   // imu.printData(); // Optional debug
 
   // 5. Update UI (throttled inside or called directly)
-  robotMenu.render(uiDisplay, XLineSensorValues, currentError);
+  robotMenu.render(uiDisplay, XLineSensorValues, currentError, currentPwmL, currentPwmR);
 
   // Note: EDF control not yet implemented hardware-wise,
   // but logic is prepared via robotMenu.isEdfEnabled()
@@ -153,10 +155,13 @@ void readSensorDataAndControl()
   int rightSpeed = BaseSpeed + (int)(speedCorrection * MaxTurnSpeed);
 
   // Limit motor speed map strictly for driver limits
-  leftSpeed = constrain(leftSpeed, -200, 200);
-  rightSpeed = constrain(rightSpeed, -200, 200);
+  leftSpeed = constrain(leftSpeed, -250, 250);
+  rightSpeed = constrain(rightSpeed, -250, 250);
 
   // Drive new motor interface
+  currentPwmL = leftSpeed;
+  currentPwmR = rightSpeed;
+
   motor.forward(leftSpeed, rightSpeed);
 
   lastError = filteredError;

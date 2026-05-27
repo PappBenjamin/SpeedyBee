@@ -82,7 +82,7 @@ void Display::drawPidTuningScreen(double Kp, double Kd, double baseSpeed, double
     display.display();
 }
 
-void Display::drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positionError)
+void Display::drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positionError, int pwmL, int pwmR)
 {
     display.clearDisplay();
     display.setTextSize(1);
@@ -111,6 +111,12 @@ void Display::drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positio
     display.setCursor(0, 54);
     display.print("Err: ");
     display.print(positionError);
+
+    display.setCursor(55, 54);
+    display.print("PWM: ");
+    display.print(pwmL);
+    display.print("/");
+    display.print(pwmR);
 
     display.display();
 }

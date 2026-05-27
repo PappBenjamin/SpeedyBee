@@ -22,7 +22,7 @@ public:
     void update(int keypadNum);
 
     // Renders the current menu state
-    void render(Display &disp, uint16_t *currentLineValues, int currentError);
+    void render(Display &disp, uint16_t *currentLineValues, int currentError, int pwmL, int pwmR);
 
     MenuScreen getCurrentScreen() const { return currentScreen; }
 

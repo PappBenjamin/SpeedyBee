@@ -46,12 +46,12 @@ BASE_SPEED = 4.0
 WHITE_VALUE = 1000.0 
 
 # Base PID Constants (Will be overwritten if AUTO_TUNE is True)
-Kp = 12.813           
+Kp = 12.83  #12.83         
 Ki = 0.0
-Kd = 0.785
+Kd = 0.785 #.785
 
 # ANFIS data-collection settings
-ANFIS_TARGET_ROWS = 7000
+ANFIS_TARGET_ROWS = 10000
 ANFIS_OUTPUT_FILE = 'anfis_16_sensor_data.csv'
 ANFIS_MIN_LOOP_STEPS = 1200
 ANFIS_RETURN_THRESHOLD = 0.15

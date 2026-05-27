@@ -26,7 +26,7 @@ public:
     void drawPidTuningScreen(double Kp, double Kd, double baseSpeed, double maxTurnSpeed, int selectedOption);
 
     // Draw the Sensor View screen
-    void drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positionError);
+    void drawSensorScreen(uint16_t *qtrValues, int sensorCount, int positionError, int pwmL, int pwmR);
 
     // Draw EDF Settings screen
     // selectedOption: 0=Enable/Disable, 1=PWM

@@ -124,7 +124,7 @@ void Menu::update(int keypadNum)
     }
 }
 
-void Menu::render(Display &disp, uint16_t *currentLineValues, int currentError)
+void Menu::render(Display &disp, uint16_t *currentLineValues, int currentError, int pwmL, int pwmR)
 {
     switch (currentScreen)
     {
@@ -134,7 +134,7 @@ void Menu::render(Display &disp, uint16_t *currentLineValues, int currentError)
         break;
 
     case SCREEN_SENSORS:
-        disp.drawSensorScreen(currentLineValues, XLINE_SENSOR_COUNT, currentError);
+        disp.drawSensorScreen(currentLineValues, XLINE_SENSOR_COUNT, currentError, pwmL, pwmR);
         break;
 
     case SCREEN_EDF:
