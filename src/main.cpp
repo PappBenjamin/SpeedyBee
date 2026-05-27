@@ -26,8 +26,8 @@ int currentPwmR = 0;
 // Core Tuning Variables (Modified by Menu/Serial)
 double Kp = 1.525;
 double Kd = 0.001;
-double BaseSpeed = 80.0;
-double MaxTurnSpeed = 90.0;
+double BaseSpeed = 60.0;
+double MaxTurnSpeed = 5.0;
 
 // Forward declarations
 void readSensorDataAndControl();
@@ -151,12 +151,12 @@ void readSensorDataAndControl()
   double speedCorrection = (Kp * tanhError) + (Kd * (filteredError - lastError));
 
   // Apply correction
-  int leftSpeed = BaseSpeed - (int)(speedCorrection * MaxTurnSpeed);
-  int rightSpeed = BaseSpeed + (int)(speedCorrection * MaxTurnSpeed);
+  int leftSpeed = BaseSpeed + (int)(speedCorrection * MaxTurnSpeed);
+  int rightSpeed = BaseSpeed - (int)(speedCorrection * MaxTurnSpeed);
 
   // Limit motor speed map strictly for driver limits
-  leftSpeed = constrain(leftSpeed, -250, 250);
-  rightSpeed = constrain(rightSpeed, -250, 250);
+  leftSpeed = constrain(leftSpeed, -150, 150);
+  rightSpeed = constrain(rightSpeed, -150, 150);
 
   // Drive new motor interface
   currentPwmL = leftSpeed;
