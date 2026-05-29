@@ -33,6 +33,7 @@
 #define PWM_B2 9
 #define N_SLEEP 22
 
+#define EDF_PWM_PIN 10
 #define BUZZER 3
 
 enum Keypad
