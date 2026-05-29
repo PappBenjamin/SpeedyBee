@@ -12,7 +12,8 @@ Menu::Menu()
     selectedOption = 0;
     isEditing = false;
     edfEnabled = false;
-    edfPwm = 150;
+    // Default ESC PWM in microseconds (safe idle/arm value)
+    edfPwm = 1250;
 }
 
 void Menu::update(int keypadNum)
@@ -113,12 +114,13 @@ void Menu::update(int keypadNum)
             }
             else if (selectedOption == 1)
             {
-                int tweakDir = (keypadNum == Key1) ? 10 : (keypadNum == Key2 ? -10 : 0);
+                // Adjust ESC PWM in microseconds by 50 per step
+                int tweakDir = (keypadNum == Key1) ? 50 : (keypadNum == Key2 ? -50 : 0);
                 edfPwm += tweakDir;
-                if (edfPwm < 0)
-                    edfPwm = 0;
-                if (edfPwm > 255)
-                    edfPwm = 255; // Assuming 8-bit pwm max
+                if (edfPwm < 1250)
+                    edfPwm = 1250;
+                if (edfPwm > 1900)
+                    edfPwm = 1900; // ESC typical max
             }
         }
     }

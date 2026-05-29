@@ -4,6 +4,8 @@
 #define ARDUINOTRACE_ENABLE 1
 #include <ArduinoTrace.h>
 
+#include <Servo.h>
+
 #include "motors.h"
 #include "menu.h"
 #include "display.h"
@@ -14,6 +16,7 @@ Display uiDisplay;
 IMU imu;
 Motor motor;
 Menu robotMenu;
+Servo edfServo;
 
 // Global Sensor State
 uint16_t XLineSensorValues[XLINE_SENSOR_COUNT];
@@ -58,6 +61,12 @@ void setup()
   // IO Expander init
   uiDisplay.drawLoadingScreen("Expander Init");
   setupExpander(); // Provided elsewhere in the project
+
+  // EDF (ESC) init
+  uiDisplay.drawLoadingScreen("EDF Init");
+  // Attach servo/ESC to configured pin and set to menu default
+  edfServo.attach(EDF_PWM_PIN);
+  edfServo.writeMicroseconds(robotMenu.getEdfPwm());
 
   // XLine Sensors
   uiDisplay.drawLoadingScreen("XLine calibration");
@@ -107,8 +116,17 @@ void loop()
   robotMenu.render(uiDisplay, XLineSensorValues, currentError, currentPwmL, currentPwmR);
 
   // Note: EDF control not yet implemented hardware-wise,
-  // but logic is prepared via robotMenu.isEdfEnabled()
-  // and robotMenu.getEdfPwm() if an ESC is wired.
+  // EDF control: update ESC PWM from menu when enabled
+  // Uses `robotMenu.getEdfPwm()` in microseconds (1000-2000)
+  if (robotMenu.isEdfEnabled())
+  {
+    edfServo.writeMicroseconds(robotMenu.getEdfPwm());
+  }
+  else
+  {
+    // Set to safe idle (minimum) when disabled
+    edfServo.writeMicroseconds(1000);
+  }
   delay(10); // Loop stability
 }
 
